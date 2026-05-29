@@ -1,8 +1,10 @@
+// This file is for database testing because my computer is out of space and I can't test locally, hihi
+
 const data = {
     maSinhVien: "2410xxxx",
     tenSinhVien: "Vũ Xuân Trường",
     baiTap: "NodeJS-TypeScript-Postman",
-    diaChi: "Hung Yen"
+    diaChi: "Việt Nam"
 };
 
 fetch('http://localhost:3001/api/post', {
