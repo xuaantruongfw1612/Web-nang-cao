@@ -1,42 +1,67 @@
 require('dotenv').config();
 const express = require('express');
-const connection = require('../server/database');
+const mysql = require('mysql2');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
 app.use(express.json());
 
-app.get('/api/dbconnection', (req, res) => {
-    const sqlQuery = 'SELECT * FROM STUDENT_ENROLEMENT LIMIT 3;';
-
-    connection.query(sqlQuery, (error, results) => {
-        if (error) {
-            console.error('Lỗi truy vấn database: ' + error.stack);
-            return res.status(500).json({ error: 'Database query failed' });
-        }
-        res.status(200).json({ query: results });
-    });
+// Kết nối tới Aiven Cloud (Sử dụng Pool để tối ưu hiệu năng)
+const pool = mysql.createPool({
+    host: process.env.DB_HOST,
+    port: process.env.DB_PORT,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_DATABASE,
+    ssl: { rejectUnauthorized: false }
 });
 
-app.get('/api/get', (req, res) => {
-    res.status(200).json({
-        message: "Chào mừng bạn đến với Node.js Server!"
-    });
+// 1. READ: Lấy toàn bộ danh sách sinh viên
+app.get('/api/students', async (req, res) => {
+    try {
+        const [rows] = await pool.promise().query('SELECT * FROM STUDENT');
+        res.json(rows);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
-app.post('/api/post', (req, res) => {
-    const dataFromClient = req.body;
+// 2. CREATE: Thêm sinh viên mới
+app.post('/api/students', async (req, res) => {
+    const { SID, SNAME, EMAIL, Tutor_Id } = req.body;
+    try {
+        await pool.promise().query(
+            'INSERT INTO STUDENT (SID, SNAME, EMAIL, Tutor_Id) VALUES (?, ?, ?, ?)',
+            [SID, SNAME, EMAIL, Tutor_Id]
+        );
+        res.status(201).json({ message: "Thêm sinh viên thành công!" });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
 
-    console.log("Dữ liệu nhận được từ Client:", dataFromClient);
+// 3. UPDATE: Cập nhật email sinh viên theo SID
+app.put('/api/students/:id', async (req, res) => {
+    const { EMAIL } = req.body;
+    try {
+        await pool.promise().query('UPDATE STUDENT SET EMAIL=? WHERE SID=?', [EMAIL, req.params.id]);
+        res.json({ message: 'Cập nhật email thành công!' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
 
-    res.status(200).json({
-        success: true,
-        message: "Server đã nhận được POST Request thành công!",
-        receivedData: dataFromClient
-    });
+// 4. DELETE: Xóa sinh viên
+app.delete('/api/students/:id', async (req, res) => {
+    try {
+        await pool.promise().query('DELETE FROM STUDENT WHERE SID=?', [req.params.id]);
+        res.json({ message: 'Xóa sinh viên thành công!' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
 app.listen(PORT, () => {
-    console.log(`Server is listening on port ${PORT}`);
+    console.log(`Server đang chạy tại port ${PORT}`);
 });
