@@ -1,4 +1,4 @@
-# Nền tảng Nhắc việc & Quản lý Deadline Sinh viên (Student Deadline Manager)
+# Xây dựng ứngNhắc việc & Quản lý Deadline Sinh viên (Student Deadline Manager)
 
 Ứng dụng Backend xây dựng trên nền tảng Node.js, Express và MySQL nhằm hỗ trợ sinh viên quản lý tiến độ học tập và tự động lập lịch nhắc nhở deadline theo thời gian thực.
 
