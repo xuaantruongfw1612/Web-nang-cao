@@ -7,7 +7,6 @@ const PORT = process.env.PORT || 3001;
 
 app.use(express.json());
 
-// Cấu hình kết nối Pool tới Aiven Cloud
 const pool = mysql.createPool({
     host: process.env.DB_HOST,
     port: process.env.DB_PORT,
@@ -60,7 +59,7 @@ app.post('/api/deadlines', async (req, res) => {
     }
 });
 
-// 3. UPDATE (PUT): Cập nhật trạng thái tiến độ (Ví dụ: Đã hoàn thành)
+// 3. UPDATE (PUT): Cập nhật trạng thái tiến độ
 app.put('/api/deadlines/:id', async (req, res) => {
     const { Status } = req.body; 
     try {
