@@ -1,5 +1,5 @@
 import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn, CreateDateColumn } from 'typeorm';
-import { Task } from './task.entity';
+import { Task } from './task/task.entity';
 
 @Entity()
 export class NotificationLog {
