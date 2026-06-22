@@ -1,17 +1,16 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn, CreateDateColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { Task } from './task/task.entity';
 
-@Entity()
+@Entity('notification_logs')
 export class NotificationLog {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+  @PrimaryGeneratedColumn()
+  id: number;
 
-  @Column({ length: 20 })
-  milestone: string; 
-  @CreateDateColumn()
-  sentAt: Date; 
+  @Column()
+  message: string;
 
-  @ManyToOne(() => Task, task => task.notificationLogs, { onDelete: 'CASCADE' })
+  // Đã fix: Bỏ tham chiếu ngược sang task.notificationLogs
+  @ManyToOne(() => Task, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'task_id' })
   task: Task;
 }

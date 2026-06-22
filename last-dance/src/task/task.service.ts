@@ -1,9 +1,4 @@
-import { 
-  Injectable, 
-  NotFoundException, 
-  BadRequestException, 
-  ConflictException 
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Task } from './task.entity';
@@ -12,88 +7,54 @@ import { Task } from './task.entity';
 export class TaskService {
   constructor(
     @InjectRepository(Task)
-    private taskRepository: Repository<Task>,
+    private readonly taskRepository: Repository<Task>,
   ) {}
 
-  
-  private async checkDuplicateTask(title: string, dateTime: Date, userId: number, excludeTaskId?: string) {
-    const query = this.taskRepository.createQueryBuilder('task')
-      .where('task.title = :title', { title })
-      .andWhere('task.dateTime = :dateTime', { dateTime })
-      .andWhere('task.user_id = :userId', { userId }); 
-
-    
-    if (excludeTaskId) {
-      query.andWhere('task.id != :excludeTaskId', { excludeTaskId });
-    }
-
-    const isDuplicate = await query.getOne();
-    if (isDuplicate) {
-      throw new ConflictException('Lỗi: Bạn đã có một lịch trình trùng tên và thời gian này rồi!');
-    }
+  // 1. Tạo một công việc (Task) mới
+  async create(createTaskDto: any): Promise<Task> {
+    const newTask = this.taskRepository.create(createTaskDto);
+    // ĐÃ FIX: Dùng ép kiểu kép (unknown -> Task) để vượt qua strict mode của TypeScript
+    return (await this.taskRepository.save(newTask)) as unknown as Task;
   }
 
-  
-  async create(data: Partial<Task>): Promise<Task> {
-    
-    if ((data.type === 'EXAM' || data.type === 'CLASS') && !data.room) {
-      throw new BadRequestException('Lịch thi/học phải có phòng cụ thể!');
-    }
-
-    
-    const userId = data.user ? data.user.id : (data as any).user_id; 
-    if (data.title && data.dateTime && userId) {
-      await this.checkDuplicateTask(data.title, data.dateTime, userId);
-    }
-
-   
-    const newTask = this.taskRepository.create(data);
-    return await this.taskRepository.save(newTask);
-  }
-
-  
+  // 2. Lấy toàn bộ danh sách công việc
   async findAll(): Promise<Task[]> {
     return await this.taskRepository.find({
-      relations: ['subject', 'user'],
-      order: { dateTime: 'ASC' }
+      relations: {
+        subject: true,
+        user: true,
+      },
     });
   }
 
-  
+  // 3. Tìm một công việc cụ thể theo ID
   async findOne(id: string): Promise<Task> {
     const task = await this.taskRepository.findOne({
       where: { id },
-      relations: ['subject', 'user']
+      relations: {
+        subject: true,
+        user: true,
+      },
     });
-    if (!task) throw new NotFoundException('Không tìm thấy lịch/deadline này');
+
+    if (!task) {
+      throw new NotFoundException(`Không tìm thấy công việc với ID: ${id}`);
+    }
     return task;
   }
 
-  
-  async update(id: string, data: Partial<Task>): Promise<Task> {
-    const existingTask = await this.findOne(id); 
-
-    
-    const userId = existingTask.user?.id;
-
-    
-    const checkTitle = data.title || existingTask.title;
-    const checkDateTime = data.dateTime || existingTask.dateTime;
-
-    if (userId) {
-      /
-      await this.checkDuplicateTask(checkTitle, checkDateTime, userId, id);
-    }
-
-    await this.taskRepository.update(id, data);
-    return this.findOne(id);
+  // 4. Cập nhật thông tin công việc theo ID
+  async update(id: string, updateTaskDto: any): Promise<Task> {
+    const task = await this.findOne(id); 
+    const updatedTask = Object.assign(task, updateTaskDto);
+    // ĐÃ FIX: Ép kiểu kép tương tự hàm create
+    return (await this.taskRepository.save(updatedTask)) as unknown as Task;
   }
 
- 
-  async remove(id: string): Promise<void> {
-    const result = await this.taskRepository.delete(id);
-    if (result.affected === 0) {
-      throw new NotFoundException('Không tìm thấy lịch/deadline để xóa');
-    }
+  // 5. Xóa bỏ một công việc khỏi hệ thống
+  async remove(id: string): Promise<{ message: string }> {
+    const task = await this.findOne(id);
+    await this.taskRepository.remove(task);
+    return { message: `Đã xóa thành công công việc với ID: ${id}` };
   }
 }

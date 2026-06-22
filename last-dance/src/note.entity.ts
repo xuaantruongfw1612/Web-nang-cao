@@ -1,22 +1,16 @@
-import {
-  Entity,
-  Column,
-  PrimaryGeneratedColumn,
-  ManyToOne,
-} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { Student } from './student.entity';
 
-@Entity()
+@Entity('notes')
 export class Note {
   @PrimaryGeneratedColumn()
-  NOTE_ID: number;
+  id: number;
 
-  @Column('text')
-  CONTENT: string;
+  @Column({ type: 'text' })
+  content: string;
 
-  @Column()
-  CREATED_AT: Date;
-
-  @ManyToOne(() => Student, (student) => student.notes)
+  // Đã fix: Bỏ tham chiếu ngược sang student.notes
+  @ManyToOne(() => Student) 
+  @JoinColumn({ name: 'student_id' })
   student: Student;
 }

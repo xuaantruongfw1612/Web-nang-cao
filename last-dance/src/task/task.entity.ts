@@ -1,20 +1,20 @@
-import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
-import { User } from '../user/user.entity';       
-import { Subject } from '../subject/subject.entity'; 
+import { Entity, PrimaryColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Student } from '../student.entity'; // Đã fix đường dẫn & tên entity
+import { Subject } from '../subject.entity'; // Đã fix đường dẫn
 
-@Entity('tasks') 
+@Entity('tasks')
 export class Task {
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryColumn({ type: 'varchar', length: 36 })
   id: string;
 
   @Column({ length: 100 })
-  title: string; 
+  title: string;
 
-  @Column({ type: 'varchar', length: 20 })
-  type: string; // 'EXAM', 'CLASS', 'ASSIGNMENT'
+  @Column({ length: 20 })
+  type: string;
 
-  @Column({ type: 'datetime' })
-  dateTime: Date; 
+  @Column({ name: 'task_datetime', type: 'datetime' })
+  taskDatetime: Date;
 
   @Column({ length: 50, nullable: true })
   room: string;
@@ -22,16 +22,14 @@ export class Task {
   @Column({ type: 'text', nullable: true })
   notes: string;
 
-  @Column({ default: 'PENDING' })
+  @Column({ length: 20, default: 'PENDING' })
   status: string;
 
-  
-  @ManyToOne(() => User, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'user_id' }) 
-  user: User;
+  @ManyToOne(() => Student, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'user_id' })
+  user: Student;
 
-  
-  @ManyToOne(() => Subject, { onDelete: 'SET NULL', nullable: true })
-  @JoinColumn({ name: 'subject_id' }) 
+  @ManyToOne(() => Subject, (subject) => subject.tasks, { onDelete: 'SET NULL', nullable: true })
+  @JoinColumn({ name: 'subject_id' })
   subject: Subject;
 }
