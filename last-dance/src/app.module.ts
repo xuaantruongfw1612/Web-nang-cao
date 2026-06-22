@@ -1,40 +1,46 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { UserModule } from './users/user.module';
-import { UserEntity } from './users/user.entity';
+import { User } from './users/user.entity';
 import * as fs from 'fs';
+import * as path from 'path';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      isGlobal: true,
+      isGlobal: true, 
     }),
-
     TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        type: 'mysql',
-        host: configService.get<string>('DB_HOST'),
-        port: configService.get<number>('DB_PORT'),
-        username: configService.get<string>('DB_USER'),
-        password: configService.get<string>('DB_PASSWORD'),
-        database: configService.get<string>('DB_NAME'),
-        entities: [UserEntity],
-        synchronize: true, 
-        ssl: {
-          ca: fs.readFileSync('./ca.pem').toString(), 
+      useFactory: () => {
+        const caPath = path.resolve(process.cwd(), process.env.DB_SSL_CA_PATH || 'ca.pem');
+        
+        let sslConfig: any = {
           rejectUnauthorized: true,
-        },
-      }),
-    }),
+        };
 
+        try {
+          // Đọc nội dung file ca.pem
+          sslConfig.ca = fs.readFileSync(caPath).toString();
+        } catch (error) {
+          console.error(`Không thể đọc file CA tại đường dẫn: ${caPath}. Kiểm tra lại vị trí file ca.pem!`);
+          sslConfig = { rejectUnauthorized: false };
+        }
+
+        return {
+          type: 'mysql',
+          host: process.env.DB_HOST,
+          port: Number(process.env.DB_PORT),
+          username: process.env.DB_USER,
+          password: process.env.DB_PASSWORD,
+          database: process.env.DB_NAME,
+          entities: [User],
+          synchronize: false,
+          ssl: sslConfig, // SSL ca.pem
+        };
+      },
+    }),
     UserModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
 })
 export class AppModule {}
