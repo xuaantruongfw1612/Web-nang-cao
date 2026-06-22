@@ -1,28 +1,40 @@
-import { Controller, Get, Post, Put, Delete, Body, Param } from '@nestjs/common';
+import { Controller, Post, Body, Get, UseGuards, Request } from '@nestjs/common';
 import { UserService } from './user.service';
-import { CreateUserDto, UpdateUserDto } from './user.dto';
+import { CreateUserDto } from './user.dto';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Post()
-  create(@Body() dto: CreateUserDto) {
-    return this.userService.create(dto);
+  // API Đăng ký: POST http://localhost:3000/users/register
+  @Post('register')
+  async register(@Body() createUserDto: CreateUserDto) {
+    const user = await this.userService.register(createUserDto);
+    return {
+      success: true,
+      message: 'Đăng ký tài khoản thành công!',
+      data: {
+        id: user.id,
+        username: user.username,
+      },
+    };
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: number) {
-    return this.userService.findOne(id);
+  // API Đăng nhập: POST http://localhost:3000/users/login
+  @Post('login')
+  async login(@Body() loginDto: CreateUserDto) {
+    return this.userService.login(loginDto);
   }
 
-  @Put(':id')
-  update(@Param('id') id: number, @Body() dto: UpdateUserDto) {
-    return this.userService.update(id, dto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: number) {
-    return this.userService.remove(id);
+  // Thêm một Route bảo mật để test tính năng Authorization của JWT (Yêu cầu 4)
+  // Gửi Bearer Token nhận được từ API Login vào Header để gọi API này
+  @UseGuards(AuthGuard('jwt'))
+  @Get('profile')
+  getProfile(@Request() req) {
+    return {
+      message: 'Truy cập API bảo mật thành công!',
+      user: req.user,
+    };
   }
 }
