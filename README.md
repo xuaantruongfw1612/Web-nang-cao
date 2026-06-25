@@ -25,6 +25,7 @@ Sau đó, mở Terminal và chạy cụm lệnh dưới đây tùy thuộc vào 
 **Lựa chọn 1: Khởi chạy nhánh `truongdev`**
 
 cd /workspaces/Web-nang-cao/last-dance
+
 git checkout truongdev
 
 npm install
@@ -34,6 +35,9 @@ npm run start:dev
 **Lựa chọn 2: Khởi chạy nhánh `tai0510`**
 
 cd /workspaces/Web-nang-cao/last-dance
+
 git checkout tai0510
+
 npm install
+
 npm run start:dev
