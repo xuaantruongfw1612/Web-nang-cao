@@ -1,5 +1,7 @@
 # Xây dựng ứng dụng Nhắc việc & Quản lý Deadline cho Sinh viên (Student Deadline Manager)
 
+> **⚠️ LƯU Ý QUAN TRỌNG:** Hiện tại toàn bộ mã nguồn mới nhất của dự án đang được phát triển và lưu trữ trên hai nhánh `tai0510` và `truongdev`. Nhánh `main` tạm thời chưa được cập nhật. Vui lòng chuyển nhánh (checkout) trước khi tiến hành cài đặt!
+
 Ứng dụng Backend xây dựng trên nền tảng Node.js, NestJS và MySQL nhằm hỗ trợ sinh viên quản lý tiến độ học tập và tự động lập lịch nhắc nhở deadline theo thời gian thực.
 
 ## 1. Thực trạng & Ý tưởng dự án
@@ -17,9 +19,19 @@ Sinh viên hiện nay thường phải đối mặt với khối lượng bài t
 
 ## 3. Hướng dẫn cài đặt & Khởi chạy
 
-Để triển khai dự án, trước tiên bạn cần đảm bảo đã tạo file `.env` ở thư mục gốc chứa thông tin kết nối tới CSDL Aiven (`DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`, `JWT_SECRET`). Sau đó, mở Terminal và chạy trực tiếp cụm lệnh dưới đây để vào thư mục, tải thư viện và khởi động server:
+Để triển khai dự án, trước tiên bạn cần đảm bảo đã tạo file `.env` ở thư mục gốc chứa thông tin kết nối tới CSDL Aiven (`DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`, `JWT_SECRET`). 
 
-```bash
+Sau đó, mở Terminal và chạy cụm lệnh dưới đây tùy thuộc vào nhánh code mà bạn muốn khởi chạy:
+**Lựa chọn 1: Khởi chạy nhánh `truongdev`**
+
 cd /workspaces/Web-nang-cao/last-dance
+git checkout truongdev
+npm install
+npm run start:dev
+
+**Lựa chọn 2: Khởi chạy nhánh `tai0510`**
+
+cd /workspaces/Web-nang-cao/last-dance
+git checkout tai0510
 npm install
 npm run start:dev
