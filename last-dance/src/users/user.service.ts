@@ -22,7 +22,7 @@ export class UserService {
     const existingUser = await this.userRepository.findOne({
       where: [{ email }, { student_code }],
     });
-    
+
     if (existingUser) {
       throw new BadRequestException('Email hoặc Mã số sinh viên đã tồn tại!');
     }
@@ -41,7 +41,7 @@ export class UserService {
     });
 
     const savedUser = await this.userRepository.save(newUser);
-    
+
     // Ẩn trường password trước khi trả về kết quả JSON để bảo mật
     delete savedUser.password;
     return savedUser;
