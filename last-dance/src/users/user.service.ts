@@ -64,7 +64,12 @@ export class UserService {
     }
 
     // Tạo JWT Payload chứa các thông tin cơ bản của sinh viên
-    const payload = { sub: user.id, email: user.email, student_code: user.student_code };
+    const payload = {
+  sub: user.id,
+  email: user.email,
+  student_code: user.student_code,
+  full_name: user.full_name,
+};
     const accessToken = await this.jwtService.signAsync(payload);
 
     // [Yêu cầu 1 & 2]: Lưu thông tin token vào Cookies và lưu vết ID vào Session
