@@ -5,12 +5,15 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 
+// ĐÃ THÊM: Import TaskModule để kích hoạt API Controller
+import { TaskModule } from './task/task.module'; 
+
 // Import toàn bộ các Entity
 import { Student } from './student.entity';
 import { Subject } from './subject.entity';
 import { Note } from './note.entity';
 import { NotificationLog } from './notification-log.entity';
-import { Task } from './task/task.entity'; // Quan trọng: Phải có Task
+import { Task } from './task/task.entity'; 
 
 @Module({
   imports: [
@@ -36,6 +39,8 @@ import { Task } from './task/task.entity'; // Quan trọng: Phải có Task
       }),
     }),
     AuthModule,
+    // ĐÃ THÊM: Đăng ký TaskModule vào hệ thống để mở đường dẫn /tasks
+    TaskModule, 
   ],
   controllers: [AppController],
   providers: [AppService],
