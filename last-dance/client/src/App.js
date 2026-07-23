@@ -5,6 +5,7 @@ import NavDropdown from 'react-bootstrap/NavDropdown';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import Subjects from './pages/Subjects';
 
 function App() {
   const isLoggedIn = !!localStorage.getItem('accessToken');
@@ -22,7 +23,7 @@ function App() {
         <Navbar.Collapse id="main-navbar">
           <Nav className="me-auto">
             <Nav.Link as={RouterLink} to="/">Home</Nav.Link>
-            <Nav.Link as={RouterLink} to="/link">Link</Nav.Link>
+            {isLoggedIn && <Nav.Link as={RouterLink} to="/subjects">Môn học</Nav.Link>}
             <NavDropdown title="Options" id="options-dropdown">
               {isLoggedIn ? (
                 <NavDropdown.Item onClick={handleLogout}>Logout</NavDropdown.Item>
@@ -41,6 +42,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/subjects" element={<Subjects />} />
       </Routes>
     </>
   );
