@@ -7,7 +7,11 @@ import NavDropdown from 'react-bootstrap/NavDropdown';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
+<<<<<<< HEAD
+import Subjects from './pages/Subjects';
+=======
 import TaskManager from './pages/TaskManager';
+>>>>>>> origin/main
 
 function App() {
   const isLoggedIn = !!localStorage.getItem('accessToken');
@@ -23,6 +27,28 @@ function App() {
 
   return (
     <>
+<<<<<<< HEAD
+      <Navbar bg="light" expand="lg" className="px-3">
+        <Navbar.Brand as={RouterLink} to="/">MY APP</Navbar.Brand>
+        <Navbar.Toggle aria-controls="main-navbar" />
+        <Navbar.Collapse id="main-navbar">
+          <Nav className="me-auto">
+            <Nav.Link as={RouterLink} to="/">Home</Nav.Link>
+            {isLoggedIn && <Nav.Link as={RouterLink} to="/subjects">Môn học</Nav.Link>}
+            <NavDropdown title="Options" id="options-dropdown">
+              {isLoggedIn ? (
+                <NavDropdown.Item onClick={handleLogout}>Logout</NavDropdown.Item>
+              ) : (
+                <>
+                  <NavDropdown.Item as={RouterLink} to="/login">Login</NavDropdown.Item>
+                  <NavDropdown.Item as={RouterLink} to="/register">Register</NavDropdown.Item>
+                </>
+              )}
+            </NavDropdown>
+          </Nav>
+        </Navbar.Collapse>
+      </Navbar>
+=======
       {/* Chỉ hiển thị Navbar Bootstrap cũ khi KHÔNG phải là trang Dashboard */}
       {!isDashboardRoute && (
         <Navbar bg="light" expand="lg" className="px-3">
@@ -46,6 +72,7 @@ function App() {
           </Navbar.Collapse>
         </Navbar>
       )}
+>>>>>>> origin/main
 
       <Routes>
         {/* Tự động chuyển hướng từ trang gốc (/) thẳng sang /tasks */}
@@ -53,9 +80,13 @@ function App() {
         
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+<<<<<<< HEAD
+        <Route path="/subjects" element={<Subjects />} />
+=======
         
         {/* Trang TaskManager đã tự động gọi MainLayout bên trong nó */}
         <Route path="/tasks" element={<TaskManager />} />
+>>>>>>> origin/main
       </Routes>
     </>
   );

@@ -1,3 +1,4 @@
+import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import cookieParser from 'cookie-parser';
@@ -5,6 +6,13 @@ import session from 'express-session';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
 
   app.use(cookieParser());
   app.use(
@@ -17,9 +25,17 @@ async function bootstrap() {
   );
 
   app.enableCors({
-    origin: (origin, callback) => {
-      if (!origin) return callback(null, true);
-      const ok = /^http:\/\/localhost:\d+$/.test(origin) || /\.app\.github\.dev$/.test(origin);
+    origin: (
+      origin: string | undefined,
+      callback: (error: Error | null, allow?: boolean) => void,
+    ) => {
+      if (!origin) {
+        callback(null, true);
+        return;
+      }
+      const ok =
+        /^http:\/\/localhost:\d+$/.test(origin) ||
+        /\.app\.github\.dev$/.test(origin);
       callback(ok ? null : new Error('Not allowed by CORS'), ok);
     },
     credentials: true,
@@ -27,4 +43,4 @@ async function bootstrap() {
 
   await app.listen(process.env.PORT || 3001);
 }
-bootstrap();
+void bootstrap();

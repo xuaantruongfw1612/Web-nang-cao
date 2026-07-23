@@ -1,10 +1,15 @@
-import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
 import { RegisterDto, LoginDto } from './user.dto';
 import { JwtService } from '@nestjs/jwt';
 import bcrypt from 'bcrypt';
+import type { Request, Response } from 'express';
 
 @Injectable()
 export class UserService {
@@ -16,7 +21,8 @@ export class UserService {
 
   // Yêu cầu 3: Thực hiện viết POST API đăng kí username và password từ người dùng
   async register(registerDto: RegisterDto): Promise<Omit<User, 'password'>> {
-    const { student_code, email, password, full_name, avatar_url } = registerDto;
+    const { student_code, email, password, full_name, avatar_url } =
+      registerDto;
 
     // Kiểm tra xem email hoặc mã số sinh viên (student_code) đã tồn tại trong CSDL chưa
     const existingUser = await this.userRepository.findOne({
@@ -48,7 +54,7 @@ export class UserService {
   }
 
   // Yêu cầu 4: Thực hiện chức năng Authentication/Authorization sử dụng JWT
-  async login(loginDto: LoginDto, res: any, req: any) {
+  async login(loginDto: LoginDto, res: Response, req: Request) {
     const { email, password } = loginDto;
 
     // Tìm kiếm người dùng dựa trên email trong CSDL
@@ -65,15 +71,18 @@ export class UserService {
 
     // Tạo JWT Payload chứa các thông tin cơ bản của sinh viên
     const payload = {
-  sub: user.id,
-  email: user.email,
-  student_code: user.student_code,
-  full_name: user.full_name,
-};
+      sub: user.id,
+      email: user.email,
+      student_code: user.student_code,
+      full_name: user.full_name,
+    };
     const accessToken = await this.jwtService.signAsync(payload);
 
     // [Yêu cầu 1 & 2]: Lưu thông tin token vào Cookies và lưu vết ID vào Session
-    res.cookie('access_token', accessToken, { httpOnly: true, maxAge: 3600000 });
+    res.cookie('access_token', accessToken, {
+      httpOnly: true,
+      maxAge: 3600000,
+    });
     req.session.userId = user.id;
 
     return {
