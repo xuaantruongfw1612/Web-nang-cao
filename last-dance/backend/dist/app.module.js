@@ -14,6 +14,7 @@ const typeorm_1 = require("@nestjs/typeorm");
 const auth_module_1 = require("./auth/auth.module");
 const database_config_1 = require("./config/database.config");
 const notification_module_1 = require("./notification/notification.module");
+const task_module_1 = require("./tasks/entities/task.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
@@ -29,6 +30,7 @@ exports.AppModule = AppModule = __decorate([
             schedule_1.ScheduleModule.forRoot(),
             auth_module_1.AuthModule,
             notification_module_1.NotificationModule,
+            task_module_1.TaskModule,
         ],
     })
 ], AppModule);

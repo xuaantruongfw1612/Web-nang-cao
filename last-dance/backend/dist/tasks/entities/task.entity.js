@@ -13,11 +13,13 @@ exports.Task = void 0;
 const typeorm_1 = require("typeorm");
 const task_status_enum_1 = require("../../common/enums/task-status.enum");
 const user_entity_1 = require("../../auth/entities/user.entity");
+const subject_entity_1 = require("../../subjects/subject.entity");
 let Task = class Task {
     id;
     userId;
     user;
     subjectId;
+    subject;
     title;
     type;
     taskDatetime;
@@ -37,7 +39,7 @@ __decorate([
     __metadata("design:type", Number)
 ], Task.prototype, "userId", void 0);
 __decorate([
-    (0, typeorm_1.ManyToOne)(() => user_entity_1.User),
+    (0, typeorm_1.ManyToOne)(() => user_entity_1.User, { onDelete: 'CASCADE' }),
     (0, typeorm_1.JoinColumn)({ name: 'user_id' }),
     __metadata("design:type", user_entity_1.User)
 ], Task.prototype, "user", void 0);
@@ -46,23 +48,28 @@ __decorate([
     __metadata("design:type", Number)
 ], Task.prototype, "subjectId", void 0);
 __decorate([
-    (0, typeorm_1.Column)(),
+    (0, typeorm_1.ManyToOne)(() => subject_entity_1.Subject, { onDelete: 'SET NULL', nullable: true }),
+    (0, typeorm_1.JoinColumn)({ name: 'subject_id' }),
+    __metadata("design:type", subject_entity_1.Subject)
+], Task.prototype, "subject", void 0);
+__decorate([
+    (0, typeorm_1.Column)({ length: 100 }),
     __metadata("design:type", String)
 ], Task.prototype, "title", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ nullable: true }),
+    (0, typeorm_1.Column)({ length: 20, nullable: true }),
     __metadata("design:type", String)
 ], Task.prototype, "type", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ name: 'task_datetime' }),
+    (0, typeorm_1.Column)({ name: 'task_datetime', type: 'datetime' }),
     __metadata("design:type", Date)
 ], Task.prototype, "taskDatetime", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ nullable: true }),
+    (0, typeorm_1.Column)({ length: 50, nullable: true }),
     __metadata("design:type", String)
 ], Task.prototype, "room", void 0);
 __decorate([
-    (0, typeorm_1.Column)({ nullable: true }),
+    (0, typeorm_1.Column)({ type: 'text', nullable: true }),
     __metadata("design:type", String)
 ], Task.prototype, "notes", void 0);
 __decorate([

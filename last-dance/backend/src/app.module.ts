@@ -5,6 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { getDatabaseConfig } from './config/database.config';
 import { NotificationModule } from './notification/notification.module';
+import { TaskModule } from './tasks/entities/task.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { NotificationModule } from './notification/notification.module';
     ScheduleModule.forRoot(), // bật @nestjs/schedule cho 2 cron job của Notification
     AuthModule,
     NotificationModule,
+    TaskModule, // Đăng ký TaskModule vào hệ thống
   ],
 })
 export class AppModule {}

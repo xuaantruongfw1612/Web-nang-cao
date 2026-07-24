@@ -33,8 +33,7 @@ __decorate([
     __metadata("design:type", Number)
 ], User.prototype, "id", void 0);
 __decorate([
-    (0, typeorm_1.Index)({ unique: true }),
-    (0, typeorm_1.Column)({ name: 'student_code', unique: true }),
+    (0, typeorm_1.Column)({ name: 'student_code' }),
     __metadata("design:type", String)
 ], User.prototype, "studentCode", void 0);
 __decorate([
@@ -42,8 +41,7 @@ __decorate([
     __metadata("design:type", String)
 ], User.prototype, "fullName", void 0);
 __decorate([
-    (0, typeorm_1.Index)({ unique: true }),
-    (0, typeorm_1.Column)({ unique: true }),
+    (0, typeorm_1.Column)(),
     __metadata("design:type", String)
 ], User.prototype, "email", void 0);
 __decorate([

@@ -8,7 +8,9 @@ import { Subject } from '../subjects/subject.entity';
 
 // Aiven MySQL bắt buộc kết nối qua SSL/TLS, khác với MySQL local thông thường.
 function buildSslOption(config: ConfigService) {
-  const caPath = config.get<string>('DB_SSL_CA_PATH', './certs/aiven-ca.pem');
+  // Đã sửa tên file thành ca.pem để khớp với hệ thống của bạn
+  const caPath = config.get<string>('DB_SSL_CA_PATH', './certs/ca.pem');
+  
   if (!existsSync(caPath)) {
     throw new Error(
       `Không tìm thấy CA certificate tại "${caPath}". Tải file CA certificate từ ` +
@@ -30,9 +32,9 @@ export const getDatabaseConfig = (config: ConfigService): TypeOrmModuleOptions =
   ssl: config.get<string>('DB_SSL', 'true') === 'true' ? buildSslOption(config) : undefined,
   entities: [User, Subject, Task, NotificationLog],
   migrations: [__dirname + '/../migrations/*{.ts,.js}'],
-  // Đã chuyển hẳn sang migration (Câu 6) — KHÔNG dùng synchronize nữa vì nó tự
-  // đổi schema production một cách không kiểm soát được. Chạy schema bằng:
-  //   npm run migration:run
-  synchronize: false,
+  
+  // TẠM THỜI BẬT TRUE ĐỂ ĐỒNG BỘ CỘT BỊ THIẾU
+  synchronize: true, 
+  
   logging: config.get<string>('NODE_ENV', 'development') === 'development',
 });

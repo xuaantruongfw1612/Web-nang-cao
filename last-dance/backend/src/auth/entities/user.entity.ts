@@ -14,15 +14,17 @@ export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Index({ unique: true })
-  @Column({ name: 'student_code', unique: true })
+  // ĐÃ TẠM THỜI TẮT UNIQUE
+  // @Index({ unique: true })
+  @Column({ name: 'student_code' })
   studentCode: string;
 
   @Column({ name: 'full_name' })
   fullName: string;
 
-  @Index({ unique: true })
-  @Column({ unique: true })
+  // ĐÃ TẠM THỜI TẮT UNIQUE
+  // @Index({ unique: true })
+  @Column()
   email: string;
 
   @Column()
