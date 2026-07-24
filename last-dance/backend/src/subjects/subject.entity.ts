@@ -8,7 +8,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { User } from '../users/user.entity';
+import { User } from '../auth/entities/user.entity';
 
 @Entity('subjects')
 @Index('uq_user_subject', ['name', 'user'], { unique: true })

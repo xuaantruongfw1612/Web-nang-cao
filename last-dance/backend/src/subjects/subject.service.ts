@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { QueryFailedError, Repository } from 'typeorm';
-import { User } from '../users/user.entity';
+import { User } from '../auth/entities/user.entity';
 import { CreateSubjectDto, UpdateSubjectDto } from './subject.dto';
 import { Subject } from './subject.entity';
 
