@@ -9,39 +9,40 @@ import {
 } from 'typeorm';
 import { TaskStatus } from '../../common/enums/task-status.enum';
 import { User } from '../../auth/entities/user.entity';
+import { Subject } from '../../subjects/subject.entity';
 
-// LƯU Ý: entity này phản ánh bảng "tasks" do module Task/Subject (bạn cùng nhóm)
-// chịu trách nhiệm chính (CRUD, migration). Notification module chỉ cần entity
-// này để dùng TypeORM relations/QueryBuilder (không raw SQL) khi quét task sắp
-// đến hạn và khi lấy email người nhận. Không thêm method nghiệp vụ Task ở đây.
 @Entity('tasks')
 export class Task {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id: string; // Bản thân Task vẫn giữ nguyên UUID là chuẩn
 
   @Column({ name: 'user_id' })
-  userId: number;
+  userId: number; // Đã khớp với id của User
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user: User;
 
   @Column({ name: 'subject_id', nullable: true })
-  subjectId?: number;
+  subjectId?: number; // Đã khớp với id của Subject
 
-  @Column()
+  @ManyToOne(() => Subject, { onDelete: 'SET NULL', nullable: true })
+  @JoinColumn({ name: 'subject_id' })
+  subject?: Subject;
+
+  @Column({ length: 100 })
   title: string;
 
-  @Column({ nullable: true })
+  @Column({ length: 20, nullable: true })
   type?: string;
 
-  @Column({ name: 'task_datetime' })
+  @Column({ name: 'task_datetime', type: 'datetime' })
   taskDatetime: Date;
 
-  @Column({ nullable: true })
+  @Column({ length: 50, nullable: true })
   room?: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   notes?: string;
 
   @Column({ type: 'enum', enum: TaskStatus, default: TaskStatus.PENDING })
