@@ -13,7 +13,6 @@ export class NotificationService {
     private readonly logRepo: Repository<NotificationLog>,
   ) {}
 
-  // Tương ứng method createLog() trên Class Diagram.
   // Được cron "Lập lịch" gọi, hoặc gọi thủ công.
   async createLog(dto: CreateNotificationLogDto): Promise<NotificationLog> {
     const log = this.logRepo.create({
@@ -25,7 +24,6 @@ export class NotificationService {
     return this.logRepo.save(log);
   }
 
-  // "Kiểm tra Task ID trong NotificationLog" ở Activity Diagram 2:
   // tránh tạo trùng nhắc nhở cho cùng 1 task.
   async existsPendingLogForTask(taskId: string): Promise<boolean> {
     const count = await this.logRepo.count({

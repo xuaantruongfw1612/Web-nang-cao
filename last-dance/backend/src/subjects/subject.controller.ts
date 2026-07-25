@@ -13,6 +13,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import type { Request } from 'express';
 import { CreateSubjectDto, UpdateSubjectDto } from './dto/subject.dto';
 import { SubjectService } from './subject.service';
@@ -21,6 +22,8 @@ interface AuthenticatedRequest extends Request {
   user: { userId: number };
 }
 
+@ApiTags('Subjects')
+@ApiBearerAuth('access-token')
 @Controller('subjects')
 @UseGuards(AuthGuard('jwt'))
 export class SubjectController {

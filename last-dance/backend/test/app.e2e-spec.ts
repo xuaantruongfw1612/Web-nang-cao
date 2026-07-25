@@ -3,20 +3,21 @@ import { ConfigModule } from '@nestjs/config';
 import { ScheduleModule } from '@nestjs/schedule';
 import { Test, TestingModule } from '@nestjs/testing';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import * as request from 'supertest';
+import request = require('supertest');
 import { AuthModule } from '../src/auth/auth.module';
 import { User } from '../src/auth/entities/user.entity';
 import { HttpExceptionFilter } from '../src/common/filters/http-exception.filter';
 import { NotificationModule } from '../src/notification/notification.module';
 import { NotificationLog } from '../src/notification/entities/notification-log.entity';
 import { SubjectModule } from '../src/subjects/subject.module';
-import { Subject } from '../src/subjects/subject.entity';
+import { Subject } from '../src/subjects/entities/subject.entity';
 import { Task } from '../src/tasks/entities/task.entity';
+import { TaskModule } from '../src/tasks/task.module';
 
 // Test này dựng toàn bộ ứng dụng thật (đi qua ValidationPipe, Controller, Service,
 // TypeORM, ExceptionFilter) và gọi API qua HTTP thật bằng supertest.
-// Dùng SQLite in-memory thay cho Aiven MySQL để test chạy nhanh, không phụ thuộc
-// mạng/CSDL thật, không sợ để lại dữ liệu rác.
+// Dùng sql.js (SQLite chạy bằng WebAssembly, thuần JS - không cần compile native)
+// thay cho Aiven MySQL để test chạy nhanh, không phụ thuộc mạng/CSDL thật.
 describe('Auth API (e2e)', () => {
   let app: INestApplication;
 
@@ -26,8 +27,8 @@ describe('Auth API (e2e)', () => {
         ConfigModule.forRoot({ isGlobal: true }),
         ScheduleModule.forRoot(),
         TypeOrmModule.forRoot({
-          type: 'better-sqlite3',
-          database: ':memory:',
+          type: 'sqljs',
+          autoSave: false, // chỉ dùng in-memory, không ghi file ra đĩa
           entities: [User, Subject, Task, NotificationLog],
           synchronize: true,
           dropSchema: true,
@@ -35,6 +36,7 @@ describe('Auth API (e2e)', () => {
         AuthModule,
         NotificationModule,
         SubjectModule,
+        TaskModule,
       ],
     }).compile();
 
@@ -130,5 +132,63 @@ describe('Auth API (e2e)', () => {
       .set('Authorization', `Bearer ${login.body.accessToken}`);
 
     expect(res.status).toBe(200);
+  });
+
+  it('POST /api/auth/refresh -> 200 + accessToken mới khi refreshToken hợp lệ', async () => {
+    const login = await request(app.getHttpServer()).post('/api/auth/login').send({
+      email: 'a@gmail.com',
+      password: '123456',
+    });
+
+    const res = await request(app.getHttpServer())
+      .post('/api/auth/refresh')
+      .send({ refreshToken: login.body.refreshToken });
+
+    expect(res.status).toBe(200);
+    expect(res.body.accessToken).toBeDefined();
+    expect(res.body.refreshToken).toBeDefined();
+  });
+
+  it('POST /api/auth/refresh -> 401 khi refreshToken không hợp lệ', async () => {
+    const res = await request(app.getHttpServer())
+      .post('/api/auth/refresh')
+      .send({ refreshToken: 'token-gia-mao' });
+
+    expect(res.status).toBe(401);
+  });
+
+  it('POST /api/auth/refresh -> 401 khi dùng lại refreshToken đã bị rotate (nghi bị đánh cắp)', async () => {
+    const login = await request(app.getHttpServer()).post('/api/auth/login').send({
+      email: 'a@gmail.com',
+      password: '123456',
+    });
+    const oldRefreshToken = login.body.refreshToken;
+
+    // Lần 1: rotate thành công, refreshToken cũ bị vô hiệu
+    await request(app.getHttpServer()).post('/api/auth/refresh').send({ refreshToken: oldRefreshToken });
+
+    // Lần 2: dùng lại refreshToken cũ -> phải bị từ chối
+    const res = await request(app.getHttpServer())
+      .post('/api/auth/refresh')
+      .send({ refreshToken: oldRefreshToken });
+
+    expect(res.status).toBe(401);
+  });
+
+  it('POST /api/auth/logout -> thu hồi refreshToken, sau đó /refresh phải thất bại', async () => {
+    const login = await request(app.getHttpServer()).post('/api/auth/login').send({
+      email: 'a@gmail.com',
+      password: '123456',
+    });
+
+    const logoutRes = await request(app.getHttpServer())
+      .post('/api/auth/logout')
+      .set('Authorization', `Bearer ${login.body.accessToken}`);
+    expect(logoutRes.status).toBe(200);
+
+    const refreshRes = await request(app.getHttpServer())
+      .post('/api/auth/refresh')
+      .send({ refreshToken: login.body.refreshToken });
+    expect(refreshRes.status).toBe(401);
   });
 });

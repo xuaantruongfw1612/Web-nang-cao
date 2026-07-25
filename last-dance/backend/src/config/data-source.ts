@@ -17,9 +17,6 @@ function buildSslOption() {
   return { ca: readFileSync(caPath).toString(), rejectUnauthorized: true };
 }
 
-// DataSource này CHỈ dùng cho TypeORM CLI (migration:generate/run/revert),
-// tách biệt với TypeOrmModule.forRootAsync trong app.module.ts vì CLI chạy
-// độc lập, không có NestJS DI/ConfigService.
 export default new DataSource({
   type: 'mysql',
   host: process.env.DB_HOST || 'localhost',

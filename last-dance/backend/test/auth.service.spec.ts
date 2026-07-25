@@ -1,8 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { ConflictException, UnauthorizedException } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
+import { createHash } from 'crypto';
 import { Repository } from 'typeorm';
 import { AuthService } from '../src/auth/auth.service';
 import { User } from '../src/auth/entities/user.entity';
@@ -19,7 +21,7 @@ const createMockRepo = (): MockRepo => ({
 describe('AuthService', () => {
   let service: AuthService;
   let userRepo: MockRepo;
-  let jwtService: JwtService;
+  let jwtService: { signAsync: jest.Mock; verifyAsync: jest.Mock };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -28,14 +30,22 @@ describe('AuthService', () => {
         { provide: getRepositoryToken(User), useValue: createMockRepo() },
         {
           provide: JwtService,
-          useValue: { signAsync: jest.fn().mockResolvedValue('fake-jwt-token') },
+          useValue: {
+            signAsync: jest.fn().mockResolvedValue('fake-jwt-token'),
+            verifyAsync: jest.fn(),
+          },
+        },
+        {
+          provide: ConfigService,
+          // Trả default cho mọi key (đúng hành vi get(key, defaultValue) thật)
+          useValue: { get: jest.fn((_key: string, def?: unknown) => def) },
         },
       ],
     }).compile();
 
     service = module.get<AuthService>(AuthService);
     userRepo = module.get(getRepositoryToken(User));
-    jwtService = module.get<JwtService>(JwtService);
+    jwtService = module.get(JwtService) as unknown as { signAsync: jest.Mock; verifyAsync: jest.Mock };
   });
 
   afterEach(() => jest.clearAllMocks());
@@ -76,14 +86,21 @@ describe('AuthService', () => {
   });
 
   describe('login', () => {
-    it('trả về accessToken khi email/mật khẩu đúng', async () => {
+    it('trả về accessToken + refreshToken khi email/mật khẩu đúng', async () => {
       const hashed = await bcrypt.hash('123456', 10);
       userRepo.findOne!.mockResolvedValue({ id: 1, email: 'a@gmail.com', password: hashed });
+      userRepo.save!.mockImplementation((user) => Promise.resolve(user));
 
       const result = await service.login({ email: 'a@gmail.com', password: '123456' });
 
       expect(result.accessToken).toBe('fake-jwt-token');
-      expect(jwtService.signAsync).toHaveBeenCalledWith({ sub: 1, email: 'a@gmail.com' });
+      expect(result.refreshToken).toBe('fake-jwt-token');
+      // Phải ký 2 lần (access + refresh) với 2 secret khác nhau
+      expect(jwtService.signAsync).toHaveBeenCalledTimes(2);
+      // Refresh token phải được băm rồi lưu lại vào DB (không lưu bản gốc)
+      expect(userRepo.save).toHaveBeenCalledWith(
+        expect.objectContaining({ refreshTokenHash: expect.any(String) }),
+      );
     });
 
     it('ném UnauthorizedException khi email không tồn tại', async () => {
@@ -104,6 +121,57 @@ describe('AuthService', () => {
     });
   });
 
+  describe('refreshTokens', () => {
+    it('cấp token mới khi refreshToken hợp lệ và khớp bản đã lưu', async () => {
+      const refreshToken = 'refresh-token-cu';
+      const hash = createHash('sha256').update(refreshToken).digest('hex');
+      jwtService.verifyAsync!.mockResolvedValue({ sub: 1, email: 'a@gmail.com' });
+      userRepo.findOne!.mockResolvedValue({ id: 1, email: 'a@gmail.com', refreshTokenHash: hash });
+      userRepo.save!.mockImplementation((user) => Promise.resolve(user));
+
+      const result = await service.refreshTokens({ refreshToken });
+
+      expect(result.accessToken).toBe('fake-jwt-token');
+      expect(result.refreshToken).toBe('fake-jwt-token');
+    });
+
+    it('ném UnauthorizedException khi refreshToken sai chữ ký/hết hạn', async () => {
+      jwtService.verifyAsync!.mockRejectedValue(new Error('jwt expired'));
+
+      await expect(service.refreshTokens({ refreshToken: 'het-han' })).rejects.toThrow(
+        UnauthorizedException,
+      );
+    });
+
+    it('ném UnauthorizedException + thu hồi phiên khi refreshToken không khớp bản lưu (nghi bị đánh cắp)', async () => {
+      const hashCuaTokenKhac = createHash('sha256').update('token-khac').digest('hex');
+      jwtService.verifyAsync!.mockResolvedValue({ sub: 1, email: 'a@gmail.com' });
+      userRepo.findOne!.mockResolvedValue({ id: 1, refreshTokenHash: hashCuaTokenKhac });
+      userRepo.save!.mockImplementation((user) => Promise.resolve(user));
+
+      await expect(
+        service.refreshTokens({ refreshToken: 'token-bi-danh-cap' }),
+      ).rejects.toThrow(UnauthorizedException);
+
+      // Phải bị thu hồi (set null) chứ không giữ nguyên
+      expect(userRepo.save).toHaveBeenCalledWith(
+        expect.objectContaining({ refreshTokenHash: null }),
+      );
+    });
+  });
+
+  describe('logout', () => {
+    it('xoá refreshTokenHash khi logout', async () => {
+      userRepo.findOne!.mockResolvedValue({ id: 1, refreshTokenHash: 'abc' });
+      userRepo.save!.mockImplementation((user) => Promise.resolve(user));
+
+      await expect(service.logout(1)).resolves.toBe(true);
+      expect(userRepo.save).toHaveBeenCalledWith(
+        expect.objectContaining({ refreshTokenHash: null }),
+      );
+    });
+  });
+
   describe('changePassword', () => {
     it('ném UnauthorizedException khi mật khẩu hiện tại không đúng', async () => {
       const hashed = await bcrypt.hash('mat-khau-dung', 10);
@@ -112,6 +180,18 @@ describe('AuthService', () => {
       await expect(
         service.changePassword(1, { oldPassword: 'sai', newPassword: 'moi123456' }),
       ).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('thu hồi refreshTokenHash sau khi đổi mật khẩu thành công', async () => {
+      const hashed = await bcrypt.hash('mat-khau-dung', 10);
+      userRepo.findOne!.mockResolvedValue({ id: 1, password: hashed, refreshTokenHash: 'abc' });
+      userRepo.save!.mockImplementation((user) => Promise.resolve(user));
+
+      await service.changePassword(1, { oldPassword: 'mat-khau-dung', newPassword: 'moi123456' });
+
+      expect(userRepo.save).toHaveBeenCalledWith(
+        expect.objectContaining({ refreshTokenHash: null }),
+      );
     });
   });
 });

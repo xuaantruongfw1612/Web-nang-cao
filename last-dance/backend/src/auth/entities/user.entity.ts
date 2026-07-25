@@ -14,25 +14,31 @@ export class User {
   @PrimaryGeneratedColumn()
   id: number;
 
-  // ĐÃ TẠM THỜI TẮT UNIQUE
-  // @Index({ unique: true })
-  @Column({ name: 'student_code' })
+  @Index({ unique: true })
+  @Column({ name: 'student_code', unique: true })
   studentCode: string;
 
   @Column({ name: 'full_name' })
   fullName: string;
 
-  // ĐÃ TẠM THỜI TẮT UNIQUE
-  // @Index({ unique: true })
-  @Column()
+  @Index({ unique: true })
+  @Column({ unique: true })
   email: string;
 
+  // Lưu bản băm bcrypt, không bao giờ trả về client (xem toJSON bên dưới)
   @Column()
   password: string;
 
   @Column({ name: 'avatar_url', nullable: true })
   avatarUrl?: string;
 
+  // Băm (bcrypt) của refresh token hiện hành, cho phép thu hồi khi logout
+  // hoặc khi phát hiện refresh token bị đánh cắp/dùng lại (token reuse).
+  // null = chưa đăng nhập / đã logout / đã bị thu hồi.
+  @Column({ name: 'refresh_token_hash', type: 'varchar', nullable: true })
+  refreshTokenHash?: string | null;
+
+  // Quan hệ ngược với Subject (subject.entity.ts dùng (user) => user.subjects)
   @OneToMany(() => Subject, (subject) => subject.user)
   subjects: Subject[];
 
@@ -42,8 +48,9 @@ export class User {
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 
+  // Đảm bảo không rò rỉ password / refreshTokenHash khi entity được serialize ra JSON
   toJSON() {
-    const { password, ...safe } = this;
+    const { password, refreshTokenHash, ...safe } = this;
     return safe;
   }
 }

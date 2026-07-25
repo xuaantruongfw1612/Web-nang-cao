@@ -6,50 +6,57 @@ import {
   Patch,
   Param,
   Delete,
-  Request,
+  Req,
   UseGuards,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import type { Request } from 'express';
 import { TaskService } from './task.service';
 import { CreateTaskDto, UpdateTaskDto } from './dto/task.dto';
-// Giả định bạn đã có JwtAuthGuard bảo vệ route
-// import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'; 
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
+interface AuthenticatedRequest extends Request {
+  user: { userId: number; email: string };
+}
+
+@ApiTags('Tasks')
+@ApiBearerAuth('access-token')
 @Controller('tasks')
-// @UseGuards(JwtAuthGuard) // Nhớ bật Guard này để đảm bảo chỉ user đã đăng nhập mới gọi được API
+@UseGuards(JwtAuthGuard)
 export class TaskController {
   constructor(private readonly taskService: TaskService) {}
 
+  @ApiOperation({ summary: 'Tạo công việc/deadline mới' })
   @Post()
-  create(@Request() req, @Body() createTaskDto: CreateTaskDto) {
-    const userId = req.user.id; // Lấy ID của user đang gọi request
-    return this.taskService.create(userId, createTaskDto);
+  create(@Req() req: AuthenticatedRequest, @Body() createTaskDto: CreateTaskDto) {
+    return this.taskService.create(req.user.userId, createTaskDto);
   }
 
+  @ApiOperation({ summary: 'Danh sách công việc của người dùng' })
   @Get()
-  findAll(@Request() req) {
-    const userId = req.user.id;
-    return this.taskService.findAll(userId);
+  findAll(@Req() req: AuthenticatedRequest) {
+    return this.taskService.findAll(req.user.userId);
   }
 
+  @ApiOperation({ summary: 'Chi tiết 1 công việc' })
   @Get(':id')
-  findOne(@Request() req, @Param('id') id: string) {
-    const userId = req.user.id;
-    return this.taskService.findOne(userId, id);
+  findOne(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.taskService.findOne(req.user.userId, id);
   }
 
+  @ApiOperation({ summary: 'Cập nhật công việc' })
   @Patch(':id')
   update(
-    @Request() req,
+    @Req() req: AuthenticatedRequest,
     @Param('id') id: string,
     @Body() updateTaskDto: UpdateTaskDto,
   ) {
-    const userId = req.user.id;
-    return this.taskService.update(userId, id, updateTaskDto);
+    return this.taskService.update(req.user.userId, id, updateTaskDto);
   }
 
+  @ApiOperation({ summary: 'Xoá công việc' })
   @Delete(':id')
-  remove(@Request() req, @Param('id') id: string) {
-    const userId = req.user.id;
-    return this.taskService.remove(userId, id);
+  remove(@Req() req: AuthenticatedRequest, @Param('id') id: string) {
+    return this.taskService.remove(req.user.userId, id);
   }
 }

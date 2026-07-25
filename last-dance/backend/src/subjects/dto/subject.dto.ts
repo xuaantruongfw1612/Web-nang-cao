@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import {
   IsHexColor,
   IsNotEmpty,
@@ -8,16 +9,19 @@ import {
 } from 'class-validator';
 
 export class CreateSubjectDto {
+  @ApiProperty({ example: 'Phát triển Web nâng cao' })
   @IsString()
   @IsNotEmpty()
   @Matches(/\S/, { message: 'name must contain a non-whitespace character' })
   @MaxLength(100)
   name: string;
 
+  @ApiProperty({ required: false, example: '#3498db' })
   @IsOptional()
   @IsHexColor()
   color?: string;
 
+  @ApiProperty({ required: false, example: 'book' })
   @IsOptional()
   @IsString()
   @IsNotEmpty()
@@ -27,6 +31,7 @@ export class CreateSubjectDto {
 }
 
 export class UpdateSubjectDto {
+  @ApiProperty({ required: false, example: 'Phát triển Web nâng cao' })
   @IsOptional()
   @IsString()
   @IsNotEmpty()
@@ -34,10 +39,12 @@ export class UpdateSubjectDto {
   @MaxLength(100)
   name?: string;
 
+  @ApiProperty({ required: false, example: '#3498db' })
   @IsOptional()
   @IsHexColor()
   color?: string;
 
+  @ApiProperty({ required: false, example: 'book' })
   @IsOptional()
   @IsString()
   @IsNotEmpty()

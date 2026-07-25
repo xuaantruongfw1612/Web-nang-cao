@@ -18,7 +18,6 @@ export class NotificationScheduler {
     private readonly mailService: MailService,
   ) {}
 
-  // Activity Diagram "Hệ thống Lập lịch (Cronjob) và Cơ sở dữ liệu"
   // Chạy mỗi giờ: tìm task PENDING sắp hết hạn trong 24h, tạo NotificationLog nếu chưa có.
   // Toàn bộ truy vấn dùng TypeORM Repository (find + toán tử Between), không raw SQL.
   @Cron(CronExpression.EVERY_HOUR)
@@ -47,7 +46,7 @@ export class NotificationScheduler {
     }
 
     for (const task of dueTasks) {
-      // "Kiểm tra Task ID trong NotificationLog" -> "Log tồn tại?" trên Activity Diagram
+      // "Kiểm tra Task ID trong NotificationLog" -> "Log tồn tại?"
       const alreadyLogged = await this.notificationService.existsPendingLogForTask(task.id);
       if (alreadyLogged) continue; // Đã có -> bỏ qua, không tạo trùng
 

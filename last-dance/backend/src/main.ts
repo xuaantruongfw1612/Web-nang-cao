@@ -1,46 +1,47 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
-import cookieParser from 'cookie-parser';
-import session from 'express-session';
+import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  app.enableCors();
+
+  // Tự động validate DTO (class-validator) trên mọi request, trả 400 kèm message rõ ràng
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true,
+      whitelist: true, // loại bỏ field lạ không khai báo trong DTO
       forbidNonWhitelisted: true,
       transform: true,
     }),
   );
 
-  app.use(cookieParser());
-  app.use(
-    session({
-      secret: process.env.SESSION_SECRET || 'fallback-secret-key',
-      resave: false,
-      saveUninitialized: false,
-      cookie: { maxAge: 3600000, httpOnly: true },
-    }),
-  );
+  app.useGlobalFilters(new HttpExceptionFilter());
 
-  app.enableCors({
-    origin: (
-      origin: string | undefined,
-      callback: (error: Error | null, allow?: boolean) => void,
-    ) => {
-      if (!origin) {
-        callback(null, true);
-        return;
-      }
-      const ok =
-        /^http:\/\/localhost:\d+$/.test(origin) ||
-        /\.app\.github\.dev$/.test(origin);
-      callback(ok ? null : new Error('Not allowed by CORS'), ok);
-    },
-    credentials: true,
-  });
+  // Swagger/OpenAPI - truy cập tại /api/docs sau khi chạy server.
+  // Bấm nút "Authorize" và dán accessToken (không cần gõ chữ "Bearer ") để
+  // test thử các API cần đăng nhập ngay trên giao diện Swagger.
+  const swaggerConfig = new DocumentBuilder()
+    .setTitle('Student Deadline Manager API')
+    .setDescription(
+      'API quản lý tài khoản, môn học, công việc/deadline và nhắc nhở tự động qua email.',
+    )
+    .setVersion('1.0')
+    .addBearerAuth(
+      { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
+      'access-token', // tên định danh, tham chiếu trong @ApiBearerAuth('access-token')
+    )
+    .build();
+  const swaggerDocument = SwaggerModule.createDocument(app, swaggerConfig);
+  SwaggerModule.setup('api/docs', app, swaggerDocument);
 
-  await app.listen(process.env.PORT || 3001);
+  const port = process.env.PORT ?? 3000;
+  await app.listen(port);
+  // eslint-disable-next-line no-console
+  console.log(`Server đang chạy tại http://localhost:${port}`);
+  // eslint-disable-next-line no-console
+  console.log(`Swagger docs tại http://localhost:${port}/api/docs`);
 }
-void bootstrap();
+bootstrap();

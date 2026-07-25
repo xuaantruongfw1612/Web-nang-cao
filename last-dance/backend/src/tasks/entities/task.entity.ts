@@ -45,7 +45,10 @@ export class Task {
   @Column({ type: 'text', nullable: true })
   notes?: string;
 
-  @Column({ type: 'enum', enum: TaskStatus, default: TaskStatus.PENDING })
+  // Dùng varchar thay vì type:'enum' - driver sql.js (dùng khi chạy test e2e)
+  // không hỗ trợ kiểu cột 'enum' native, dù MySQL thật vẫn nhận string bình
+  // thường. Validate giá trị hợp lệ đảm bảo ở tầng DTO (@IsEnum trong task.dto.ts).
+  @Column({ type: 'varchar', length: 20, default: TaskStatus.PENDING })
   status: TaskStatus;
 
   @CreateDateColumn({ name: 'created_at' })
@@ -53,4 +56,15 @@ export class Task {
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
+
+  // Tương ứng method isOverdue() trên Class Diagram (Chương 3).
+  // Một công việc được coi là "quá hạn" khi: chưa hoàn thành/chưa huỷ VÀ
+  // đã qua thời điểm taskDatetime. Tính động (không dựa vào 1 giá trị status
+  // OVERDUE cố định trong DB) để luôn chính xác tại thời điểm gọi, không cần
+  // thêm cronjob riêng chỉ để cập nhật trạng thái quá hạn.
+  isOverdue(): boolean {
+    const isFinished = this.status === TaskStatus.COMPLETED || this.status === TaskStatus.CANCELLED;
+    if (isFinished) return false;
+    return new Date(this.taskDatetime).getTime() < Date.now();
+  }
 }

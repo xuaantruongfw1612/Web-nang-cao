@@ -32,7 +32,7 @@ export class TaskService {
       where: { id, userId },
       relations: { subject: true },
     });
-    
+
     if (!task) {
       throw new NotFoundException('Không tìm thấy công việc này hoặc bạn không có quyền truy cập');
     }
@@ -41,7 +41,7 @@ export class TaskService {
 
   async update(userId: number, id: string, updateTaskDto: UpdateTaskDto): Promise<Task> {
     const task = await this.findOne(userId, id); // Tái sử dụng hàm findOne để check tồn tại và quyền
-    
+
     // Cập nhật các trường mới vào đối tượng task cũ
     Object.assign(task, updateTaskDto);
     return await this.taskRepository.save(task);

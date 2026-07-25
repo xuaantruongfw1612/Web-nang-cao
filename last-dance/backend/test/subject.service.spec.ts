@@ -1,6 +1,6 @@
 import { ConflictException, NotFoundException } from '@nestjs/common';
 import { QueryFailedError, Repository } from 'typeorm';
-import { Subject } from '../src/subjects/subject.entity';
+import { Subject } from '../src/subjects/entities/subject.entity';
 import { SubjectService } from '../src/subjects/subject.service';
 
 /* eslint-disable @typescript-eslint/unbound-method */
@@ -49,7 +49,7 @@ describe('SubjectService', () => {
   it('returns a conflict for a duplicate subject name', async () => {
     const entity = { name: 'Toán' } as Subject;
     repository.create.mockReturnValue(entity);
-    const error = new QueryFailedError('INSERT', [], { code: 'ER_DUP_ENTRY' });
+    const error = new QueryFailedError('INSERT', [], { code: 'ER_DUP_ENTRY' } as unknown as Error);
     repository.save.mockRejectedValue(error);
     await expect(service.create({ name: 'Toán' }, 7)).rejects.toBeInstanceOf(
       ConflictException,

@@ -13,8 +13,13 @@ type MockTaskRepo = Partial<Record<keyof Repository<Task>, jest.Mock>>;
 describe('NotificationScheduler', () => {
   let scheduler: NotificationScheduler;
   let taskRepo: MockTaskRepo;
-  let notificationService: jest.Mocked<Partial<NotificationService>>;
-  let mailService: jest.Mocked<Partial<MailService>>;
+  let notificationService: {
+    existsPendingLogForTask: jest.Mock;
+    createLog: jest.Mock;
+    findDueForSending: jest.Mock;
+    updateStatus: jest.Mock;
+  };
+  let mailService: { sendDeadlineReminder: jest.Mock };
 
   beforeEach(async () => {
     taskRepo = { find: jest.fn() };
