@@ -8,6 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Subject } from '../../subjects/entities/subject.entity';
+import { Task } from '../../tasks/entities/task.entity'; // <-- Thêm import Task
 
 @Entity('users')
 export class User {
@@ -41,6 +42,10 @@ export class User {
   // Quan hệ ngược với Subject (subject.entity.ts dùng (user) => user.subjects)
   @OneToMany(() => Subject, (subject) => subject.user)
   subjects: Subject[];
+
+  // <-- Thêm mối quan hệ: 1 User có nhiều Tasks
+  @OneToMany(() => Task, (task) => task.user)
+  tasks: Task[];
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
