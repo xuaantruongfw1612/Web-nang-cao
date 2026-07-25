@@ -1,70 +1,71 @@
 import React from 'react';
-import { Routes, Route, Link as RouterLink, useLocation, Navigate } from 'react-router-dom';
-import Navbar from 'react-bootstrap/Navbar';
+import {
+  Link as RouterLink,
+  Navigate,
+  Route,
+  Routes,
+  useLocation,
+} from 'react-router-dom';
 import Nav from 'react-bootstrap/Nav';
+import Navbar from 'react-bootstrap/Navbar';
 import NavDropdown from 'react-bootstrap/NavDropdown';
-
-import Home from './pages/Home';
+import api from './api/axios';
+import MainLayout from './components/MainLayout';
 import Login from './pages/Login';
 import Register from './pages/Register';
-<<<<<<< HEAD
 import Subjects from './pages/Subjects';
-=======
 import TaskManager from './pages/TaskManager';
->>>>>>> origin/main
 
 function App() {
-  const isLoggedIn = !!localStorage.getItem('accessToken');
-  const location = useLocation(); // Lấy đường dẫn hiện tại để kiểm tra
+  const isLoggedIn = Boolean(localStorage.getItem('accessToken'));
+  const location = useLocation();
+  const isDashboardRoute =
+    location.pathname.startsWith('/tasks') ||
+    location.pathname.startsWith('/subjects');
 
-  const handleLogout = () => {
-    localStorage.removeItem('accessToken');
-    window.location.href = '/';
+  const handleLogout = async () => {
+    try {
+      if (isLoggedIn) {
+        await api.post('/api/auth/logout');
+      }
+    } catch {
+      // Luôn xóa token phía client kể cả khi token đã hết hạn.
+    } finally {
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      window.location.href = '/login';
+    }
   };
-
-  // Kiểm tra xem có đang ở các trang quản lý (Dashboard) không
-  const isDashboardRoute = location.pathname.startsWith('/tasks');
 
   return (
     <>
-<<<<<<< HEAD
-      <Navbar bg="light" expand="lg" className="px-3">
-        <Navbar.Brand as={RouterLink} to="/">MY APP</Navbar.Brand>
-        <Navbar.Toggle aria-controls="main-navbar" />
-        <Navbar.Collapse id="main-navbar">
-          <Nav className="me-auto">
-            <Nav.Link as={RouterLink} to="/">Home</Nav.Link>
-            {isLoggedIn && <Nav.Link as={RouterLink} to="/subjects">Môn học</Nav.Link>}
-            <NavDropdown title="Options" id="options-dropdown">
-              {isLoggedIn ? (
-                <NavDropdown.Item onClick={handleLogout}>Logout</NavDropdown.Item>
-              ) : (
-                <>
-                  <NavDropdown.Item as={RouterLink} to="/login">Login</NavDropdown.Item>
-                  <NavDropdown.Item as={RouterLink} to="/register">Register</NavDropdown.Item>
-                </>
-              )}
-            </NavDropdown>
-          </Nav>
-        </Navbar.Collapse>
-      </Navbar>
-=======
-      {/* Chỉ hiển thị Navbar Bootstrap cũ khi KHÔNG phải là trang Dashboard */}
       {!isDashboardRoute && (
         <Navbar bg="light" expand="lg" className="px-3">
-          <Navbar.Brand as={RouterLink} to="/">MY APP</Navbar.Brand>
+          <Navbar.Brand as={RouterLink} to="/">
+            STUDENT DEADLINE MANAGER
+          </Navbar.Brand>
           <Navbar.Toggle aria-controls="main-navbar" />
           <Navbar.Collapse id="main-navbar">
             <Nav className="me-auto">
-              <Nav.Link as={RouterLink} to="/">Home</Nav.Link>
-              <Nav.Link as={RouterLink} to="/link">Link</Nav.Link>
-              <NavDropdown title="Options" id="options-dropdown">
+              <Nav.Link as={RouterLink} to="/tasks">
+                Quản lý Deadline
+              </Nav.Link>
+              <Nav.Link as={RouterLink} to="/subjects">
+                Môn học
+              </Nav.Link>
+              <NavDropdown title="Tài khoản" id="account-dropdown">
                 {isLoggedIn ? (
-                  <NavDropdown.Item onClick={handleLogout}>Logout</NavDropdown.Item>
+                  <NavDropdown.Item onClick={handleLogout}>
+                    Đăng xuất
+                  </NavDropdown.Item>
                 ) : (
                   <>
-                    <NavDropdown.Item as={RouterLink} to="/login">Login</NavDropdown.Item>
-                    <NavDropdown.Item as={RouterLink} to="/register">Register</NavDropdown.Item>
+                    <NavDropdown.Item as={RouterLink} to="/login">
+                      Đăng nhập
+                    </NavDropdown.Item>
+                    <NavDropdown.Item as={RouterLink} to="/register">
+                      Đăng ký
+                    </NavDropdown.Item>
                   </>
                 )}
               </NavDropdown>
@@ -72,21 +73,21 @@ function App() {
           </Navbar.Collapse>
         </Navbar>
       )}
->>>>>>> origin/main
 
       <Routes>
-        {/* Tự động chuyển hướng từ trang gốc (/) thẳng sang /tasks */}
         <Route path="/" element={<Navigate to="/tasks" replace />} />
-        
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-<<<<<<< HEAD
-        <Route path="/subjects" element={<Subjects />} />
-=======
-        
-        {/* Trang TaskManager đã tự động gọi MainLayout bên trong nó */}
+        <Route
+          path="/subjects"
+          element={
+            <MainLayout>
+              <Subjects />
+            </MainLayout>
+          }
+        />
         <Route path="/tasks" element={<TaskManager />} />
->>>>>>> origin/main
+        <Route path="*" element={<Navigate to="/tasks" replace />} />
       </Routes>
     </>
   );
