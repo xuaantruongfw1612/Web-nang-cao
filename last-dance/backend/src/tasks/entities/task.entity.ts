@@ -9,22 +9,22 @@ import {
 } from 'typeorm';
 import { TaskStatus } from '../../common/enums/task-status.enum';
 import { User } from '../../auth/entities/user.entity';
-import { Subject } from '../../subjects/subject.entity';
+import { Subject } from '../../subjects/entities/subject.entity';
 
 @Entity('tasks')
 export class Task {
   @PrimaryGeneratedColumn('uuid')
-  id: string; // Bản thân Task vẫn giữ nguyên UUID là chuẩn
+  id: string;
 
   @Column({ name: 'user_id' })
-  userId: number; // Đã khớp với id của User
+  userId: number;
 
   @ManyToOne(() => User, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user: User;
 
   @Column({ name: 'subject_id', nullable: true })
-  subjectId?: number; // Đã khớp với id của Subject
+  subjectId?: number;
 
   @ManyToOne(() => Subject, { onDelete: 'SET NULL', nullable: true })
   @JoinColumn({ name: 'subject_id' })

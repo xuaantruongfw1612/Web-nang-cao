@@ -15,7 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.TaskController = void 0;
 const common_1 = require("@nestjs/common");
 const task_service_1 = require("./task.service");
-const task_dto_1 = require("./task.dto");
+const task_dto_1 = require("./dto/task.dto");
 let TaskController = class TaskController {
     taskService;
     constructor(taskService) {

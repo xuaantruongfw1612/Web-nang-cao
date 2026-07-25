@@ -5,7 +5,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from './auth/auth.module';
 import { getDatabaseConfig } from './config/database.config';
 import { NotificationModule } from './notification/notification.module';
-import { TaskModule } from './tasks/entities/task.module';
+import { TaskModule } from './tasks/task.module';
 
 @Module({
   imports: [

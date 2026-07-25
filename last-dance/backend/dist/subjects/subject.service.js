@@ -16,7 +16,7 @@ exports.SubjectService = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
-const subject_entity_1 = require("./subject.entity");
+const subject_entity_1 = require("./entities/subject.entity");
 let SubjectService = class SubjectService {
     subjectRepository;
     constructor(subjectRepository) {

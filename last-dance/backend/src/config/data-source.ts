@@ -2,7 +2,7 @@ import 'dotenv/config';
 import { existsSync, readFileSync } from 'fs';
 import { DataSource } from 'typeorm';
 import { User } from '../auth/entities/user.entity';
-import { Subject } from '../subjects/subject.entity';
+import { Subject } from '../subjects/entities/subject.entity';
 import { Task } from '../tasks/entities/task.entity';
 import { NotificationLog } from '../notification/entities/notification-log.entity';
 

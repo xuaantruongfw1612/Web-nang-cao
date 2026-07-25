@@ -6,8 +6,8 @@ import {
 import { InjectRepository } from '@nestjs/typeorm';
 import { QueryFailedError, Repository } from 'typeorm';
 import { User } from '../auth/entities/user.entity';
-import { CreateSubjectDto, UpdateSubjectDto } from './subject.dto';
-import { Subject } from './subject.entity';
+import { CreateSubjectDto, UpdateSubjectDto } from './dto/subject.dto';
+import { Subject } from './entities/subject.entity';
 
 @Injectable()
 export class SubjectService {

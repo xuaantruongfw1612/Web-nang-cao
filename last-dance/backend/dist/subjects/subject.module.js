@@ -10,7 +10,7 @@ exports.SubjectModule = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const subject_controller_1 = require("./subject.controller");
-const subject_entity_1 = require("./subject.entity");
+const subject_entity_1 = require("./entities/subject.entity");
 const subject_service_1 = require("./subject.service");
 let SubjectModule = class SubjectModule {
 };

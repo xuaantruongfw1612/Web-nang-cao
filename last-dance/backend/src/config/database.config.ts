@@ -4,7 +4,7 @@ import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { NotificationLog } from '../notification/entities/notification-log.entity';
 import { Task } from '../tasks/entities/task.entity';
 import { User } from '../auth/entities/user.entity';
-import { Subject } from '../subjects/subject.entity';
+import { Subject } from '../subjects/entities/subject.entity';
 
 // Aiven MySQL bắt buộc kết nối qua SSL/TLS, khác với MySQL local thông thường.
 function buildSslOption(config: ConfigService) {

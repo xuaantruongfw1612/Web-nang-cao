@@ -1,6 +1,6 @@
 import { Repository } from 'typeorm';
-import { Task } from './task.entity';
-import { CreateTaskDto, UpdateTaskDto } from './task.dto';
+import { Task } from './entities/task.entity';
+import { CreateTaskDto, UpdateTaskDto } from './dto/task.dto';
 export declare class TaskService {
     private readonly taskRepository;
     constructor(taskRepository: Repository<Task>);

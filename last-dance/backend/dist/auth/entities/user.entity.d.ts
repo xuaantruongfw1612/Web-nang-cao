@@ -1,4 +1,4 @@
-import { Subject } from '../../subjects/subject.entity';
+import { Subject } from '../../subjects/entities/subject.entity';
 export declare class User {
     id: number;
     studentCode: string;

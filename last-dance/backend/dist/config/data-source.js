@@ -4,7 +4,7 @@ require("dotenv/config");
 const fs_1 = require("fs");
 const typeorm_1 = require("typeorm");
 const user_entity_1 = require("../auth/entities/user.entity");
-const subject_entity_1 = require("../subjects/subject.entity");
+const subject_entity_1 = require("../subjects/entities/subject.entity");
 const task_entity_1 = require("../tasks/entities/task.entity");
 const notification_log_entity_1 = require("../notification/entities/notification-log.entity");
 function buildSslOption() {

@@ -15,7 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.SubjectController = void 0;
 const common_1 = require("@nestjs/common");
 const passport_1 = require("@nestjs/passport");
-const subject_dto_1 = require("./subject.dto");
+const subject_dto_1 = require("./dto/subject.dto");
 const subject_service_1 = require("./subject.service");
 let SubjectController = class SubjectController {
     subjectService;

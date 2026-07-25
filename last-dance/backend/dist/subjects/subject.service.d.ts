@@ -1,6 +1,6 @@
 import { Repository } from 'typeorm';
-import { CreateSubjectDto, UpdateSubjectDto } from './subject.dto';
-import { Subject } from './subject.entity';
+import { CreateSubjectDto, UpdateSubjectDto } from './dto/subject.dto';
+import { Subject } from './entities/subject.entity';
 export declare class SubjectService {
     private readonly subjectRepository;
     constructor(subjectRepository: Repository<Subject>);

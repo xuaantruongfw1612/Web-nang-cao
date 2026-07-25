@@ -1,6 +1,6 @@
 import { TaskStatus } from '../../common/enums/task-status.enum';
 import { User } from '../../auth/entities/user.entity';
-import { Subject } from '../../subjects/subject.entity';
+import { Subject } from '../../subjects/entities/subject.entity';
 export declare class Task {
     id: string;
     userId: number;

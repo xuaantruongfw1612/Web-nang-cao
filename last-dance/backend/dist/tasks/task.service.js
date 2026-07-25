@@ -16,7 +16,7 @@ exports.TaskService = void 0;
 const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
-const task_entity_1 = require("./task.entity");
+const task_entity_1 = require("./entities/task.entity");
 let TaskService = class TaskService {
     taskRepository;
     constructor(taskRepository) {

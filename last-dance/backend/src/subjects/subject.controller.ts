@@ -14,7 +14,7 @@ import {
 } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import type { Request } from 'express';
-import { CreateSubjectDto, UpdateSubjectDto } from './subject.dto';
+import { CreateSubjectDto, UpdateSubjectDto } from './dto/subject.dto';
 import { SubjectService } from './subject.service';
 
 interface AuthenticatedRequest extends Request {

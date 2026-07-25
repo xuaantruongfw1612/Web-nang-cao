@@ -11,7 +11,7 @@ const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const task_service_1 = require("./task.service");
 const task_controller_1 = require("./task.controller");
-const task_entity_1 = require("./task.entity");
+const task_entity_1 = require("./entities/task.entity");
 let TaskModule = class TaskModule {
 };
 exports.TaskModule = TaskModule;

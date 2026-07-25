@@ -10,7 +10,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { TaskService } from './task.service';
-import { CreateTaskDto, UpdateTaskDto } from './task.dto';
+import { CreateTaskDto, UpdateTaskDto } from './dto/task.dto';
 // Giả định bạn đã có JwtAuthGuard bảo vệ route
 // import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'; 
 

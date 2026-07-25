@@ -14,7 +14,7 @@ const typeorm_1 = require("@nestjs/typeorm");
 const auth_module_1 = require("./auth/auth.module");
 const database_config_1 = require("./config/database.config");
 const notification_module_1 = require("./notification/notification.module");
-const task_module_1 = require("./tasks/entities/task.module");
+const task_module_1 = require("./tasks/task.module");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;

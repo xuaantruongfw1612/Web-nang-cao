@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Task } from './task.entity';
-import { CreateTaskDto, UpdateTaskDto } from './task.dto';
+import { Task } from './entities/task.entity';
+import { CreateTaskDto, UpdateTaskDto } from './dto/task.dto';
 
 @Injectable()
 export class TaskService {
@@ -14,7 +14,7 @@ export class TaskService {
   async create(userId: number, createTaskDto: CreateTaskDto): Promise<Task> {
     const newTask = this.taskRepository.create({
       ...createTaskDto,
-      userId, // Tự động gắn userId vào task mới
+      userId,
     });
     return await this.taskRepository.save(newTask);
   }
@@ -22,15 +22,15 @@ export class TaskService {
   async findAll(userId: number): Promise<Task[]> {
     return await this.taskRepository.find({
       where: { userId },
-      order: { taskDatetime: 'ASC' }, // Sắp xếp công việc gần hạn nhất lên đầu
-      relations: { subject: true }, // Đã sửa cú pháp relations cho TypeORM v0.3+
+      order: { taskDatetime: 'ASC' },
+      relations: { subject: true },
     });
   }
 
   async findOne(userId: number, id: string): Promise<Task> {
     const task = await this.taskRepository.findOne({
       where: { id, userId },
-      relations: { subject: true }, // Đã sửa cú pháp relations cho TypeORM v0.3+
+      relations: { subject: true },
     });
     
     if (!task) {

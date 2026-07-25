@@ -13,7 +13,7 @@ exports.Task = void 0;
 const typeorm_1 = require("typeorm");
 const task_status_enum_1 = require("../../common/enums/task-status.enum");
 const user_entity_1 = require("../../auth/entities/user.entity");
-const subject_entity_1 = require("../../subjects/subject.entity");
+const subject_entity_1 = require("../../subjects/entities/subject.entity");
 let Task = class Task {
     id;
     userId;
