@@ -9,19 +9,18 @@ import {
   Request,
   UseGuards,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { TaskService } from './task.service';
 import { CreateTaskDto, UpdateTaskDto } from './dto/task.dto';
-// Giả định bạn đã có JwtAuthGuard bảo vệ route
-// import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'; 
 
-@Controller('tasks')
-// @UseGuards(JwtAuthGuard) // Nhớ bật Guard này để đảm bảo chỉ user đã đăng nhập mới gọi được API
+@Controller('api/tasks')
+@UseGuards(AuthGuard('jwt'))
 export class TaskController {
   constructor(private readonly taskService: TaskService) {}
 
   @Post()
   create(@Request() req, @Body() createTaskDto: CreateTaskDto) {
-    const userId = req.user.id; // Lấy ID của user đang gọi request
+    const userId = req.user.id;
     return this.taskService.create(userId, createTaskDto);
   }
 

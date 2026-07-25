@@ -40,9 +40,8 @@ export class TaskService {
   }
 
   async update(userId: number, id: string, updateTaskDto: UpdateTaskDto): Promise<Task> {
-    const task = await this.findOne(userId, id); // Tái sử dụng hàm findOne để check tồn tại và quyền
+    const task = await this.findOne(userId, id); 
     
-    // Cập nhật các trường mới vào đối tượng task cũ
     Object.assign(task, updateTaskDto);
     return await this.taskRepository.save(task);
   }
