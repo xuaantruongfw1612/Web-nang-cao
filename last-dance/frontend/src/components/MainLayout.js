@@ -4,9 +4,12 @@ import { useLocation, useNavigate } from 'react-router-dom';
 const MainLayout = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  
   const isSubjectPage = location.pathname.startsWith('/subjects');
+  const isCalendarPage = location.pathname.startsWith('/calendar');
+  const isTaskPage = !isSubjectPage && !isCalendarPage;
 
-  const menuClass = (active) =>
+  const submenuClass = (active) =>
     `flex w-full items-center gap-2 text-left transition ${
       active
         ? 'font-medium text-orange-400'
@@ -28,17 +31,31 @@ const MainLayout = ({ children }) => {
 
         <nav className="custom-scrollbar z-10 flex-1 overflow-y-auto py-4">
           <ul className="space-y-1 text-sm">
+            {/* TRANG CHỦ */}
             <li>
               <button
                 type="button"
-                onClick={() => navigate('/tasks')}
-                className="flex w-full items-center gap-3 px-6 py-2.5 text-left hover:bg-white/10"
+                onClick={() => navigate('/')}
+                className={`flex w-full items-center gap-3 px-6 py-2.5 text-left hover:bg-white/10 ${isTaskPage ? 'text-orange-400 bg-white/5 font-medium' : 'text-gray-300'}`}
               >
-                <span className="h-4 w-4 rounded-sm bg-gray-400" />
+                <span className={`h-4 w-4 rounded-sm ${isTaskPage ? 'bg-orange-400' : 'bg-gray-400'}`} />
                 Trang chủ
               </button>
             </li>
 
+            {/* LỊCH CÁ NHÂN (Đã được đưa ra ngoài cấp cao nhất) */}
+            <li>
+              <button
+                type="button"
+                onClick={() => navigate('/calendar')}
+                className={`flex w-full items-center gap-3 px-6 py-2.5 text-left hover:bg-white/10 ${isCalendarPage ? 'text-orange-400 bg-white/5 font-medium' : 'text-gray-300'}`}
+              >
+                <span className={`h-4 w-4 rounded-sm ${isCalendarPage ? 'bg-orange-400' : 'bg-gray-400'}`} />
+                Lịch cá nhân
+              </button>
+            </li>
+
+            {/* QUẢN LÝ DEADLINE (Bây giờ chỉ chứa 2 mục con) */}
             <li className="mt-2 flex flex-col">
               <div className="flex items-center justify-between border-l-4 border-orange-500 bg-white/5 px-6 py-2.5 font-medium text-orange-400">
                 <div className="flex items-center gap-3">
@@ -52,23 +69,22 @@ const MainLayout = ({ children }) => {
                 <li>
                   <button
                     type="button"
-                    onClick={() => navigate('/tasks')}
-                    className={menuClass(!isSubjectPage)}
+                    onClick={() => navigate('/')}
+                    className={submenuClass(isTaskPage)}
                   >
                     <span
                       className={`h-1.5 w-1.5 rounded-full ${
-                        !isSubjectPage ? 'bg-orange-400' : 'bg-gray-400'
+                        isTaskPage ? 'bg-orange-400' : 'bg-gray-400'
                       }`}
                     />
                     Danh sách công việc
                   </button>
                 </li>
-
                 <li>
                   <button
                     type="button"
                     onClick={() => navigate('/subjects')}
-                    className={menuClass(isSubjectPage)}
+                    className={submenuClass(isSubjectPage)}
                   >
                     <span
                       className={`h-1.5 w-1.5 rounded-full ${
@@ -125,7 +141,11 @@ const MainLayout = ({ children }) => {
           <span className="text-gray-500">Lịch trình</span>
           <span className="mx-2 text-gray-400">/</span>
           <span className="font-semibold text-blue-900">
-            {isSubjectPage ? 'Danh mục Môn học' : 'Danh sách công việc'}
+            {isSubjectPage
+              ? 'Danh mục Môn học'
+              : isCalendarPage
+              ? 'Lịch cá nhân'
+              : 'Danh sách công việc'}
           </span>
         </div>
 
