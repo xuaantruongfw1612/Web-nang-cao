@@ -22,34 +22,31 @@ export default function StatisticsPage() {
     }
   }
 
-  // Xử lý logic thống kê cho "7 ngày qua"
+  // Xử lý logic thống kê: Áp dụng phương án TOÀN BỘ CÔNG VIỆC
   const stats = useMemo(() => {
     const now = new Date();
-    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-
-    // Lọc các task có hạn chót rơi vào 7 ngày qua
-    const pastWeekTasks = tasks.filter(t => {
-      if (!t.taskDatetime) return false;
-      const taskDate = new Date(t.taskDatetime);
-      return taskDate >= sevenDaysAgo && taskDate <= now;
-    });
-
-    const total = pastWeekTasks.length;
     
-    // Đếm số lượng theo trạng thái. 
-    // Giả sử status của bạn có các giá trị: 'HOÀN THÀNH', 'CHƯA LÀM', 'QUÁ HẠN'
-    const completed = pastWeekTasks.filter(t => t.status === 'HOÀN THÀNH').length;
+    // Tổng số task hiện có
+    const total = tasks.length;
     
-    // Missed = Những task đã qua thời gian hiện tại nhưng status vẫn là 'CHƯA LÀM' hoặc đã bị đánh dấu là 'QUÁ HẠN'
-    const missed = pastWeekTasks.filter(t => 
+    // Đếm số lượng HOÀN THÀNH (Bắt cả các trường hợp viết hoa/viết thường để chống lỗi)
+    const completed = tasks.filter(t => 
+      t.status === 'HOÀN THÀNH' || 
+      t.status === 'Hoàn thành' || 
+      t.status === 'COMPLETED'
+    ).length;
+    
+    // Missed = Những task đã bị đánh dấu là 'QUÁ HẠN' hoặc 'CHƯA LÀM' nhưng thời gian deadline đã vượt quá thời gian hiện tại
+    const missed = tasks.filter(t => 
       t.status === 'QUÁ HẠN' || 
-      (t.status === 'CHƯA LÀM' && new Date(t.taskDatetime) < now)
+      t.status === 'OVERDUE' ||
+      ((t.status === 'CHƯA LÀM' || t.status === 'Chưa làm' || t.status === 'PENDING') && new Date(t.taskDatetime) < now)
     ).length;
 
-    // Các task còn lại (chưa làm nhưng bằng một cách nào đó lọt vào filter hoặc các trạng thái khác)
+    // Các task còn lại (Đang làm, chưa tới hạn...)
     const other = total - completed - missed;
 
-    // Tính tỷ lệ phần trăm
+    // Tính tỷ lệ phần trăm hoàn thành
     const completionRate = total === 0 ? 0 : Math.round((completed / total) * 100);
 
     return { total, completed, missed, other, completionRate };
@@ -59,7 +56,7 @@ export default function StatisticsPage() {
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 min-h-[80vh] p-6">
       <div className="mb-6 border-b border-gray-100 pb-4">
         <h2 className="text-xl font-bold text-gray-800">Thống kê tiến độ</h2>
-        <p className="text-sm text-gray-500 mt-1">Tổng quan các Deadline của bạn trong 7 ngày qua</p>
+        <p className="text-sm text-gray-500 mt-1">Tổng quan toàn bộ Deadline của bạn</p>
       </div>
 
       {loading ? (
@@ -119,8 +116,9 @@ export default function StatisticsPage() {
               <span className="font-bold text-gray-700">{stats.completionRate}% Đạt được</span>
               <span>100%</span>
             </div>
+            
             {stats.total === 0 && (
-              <p className="text-sm text-gray-400 mt-3 text-center italic">Chưa có dữ liệu task trong tuần qua.</p>
+              <p className="text-sm text-gray-400 mt-3 text-center italic">Chưa có dữ liệu task nào trong hệ thống.</p>
             )}
           </div>
         </div>
