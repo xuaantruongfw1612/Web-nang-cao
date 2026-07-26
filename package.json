@@ -1,0 +1,25 @@
+{
+  "name": "web-nang-cao",
+  "version": "1.0.0",
+  "description": "> **⚠️ LƯU Ý QUAN TRỌNG:** Hiện tại toàn bộ mã nguồn mới nhất của dự án đang được phát triển và lưu trữ trên hai nhánh `tai0510` và `truongdev`. Nhánh `main` tạm thời chưa được cập nhật. Vui lòng chuyển nhánh (checkout) trước khi tiến hành cài đặt!",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "concurrently \"npm run start:dev --prefix last-dance/backend\" \"npm start --prefix last-dance/frontend\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/xuaantruongfw1612/Web-nang-cao.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/xuaantruongfw1612/Web-nang-cao/issues"
+  },
+  "homepage": "https://github.com/xuaantruongfw1612/Web-nang-cao#readme",
+  "devDependencies": {
+    "concurrently": "^10.0.4"
+  }
+}

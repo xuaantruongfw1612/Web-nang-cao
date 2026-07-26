@@ -1,6 +1,6 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, Not } from 'typeorm';
 import { Task } from './entities/task.entity';
 import { CreateTaskDto, UpdateTaskDto } from './dto/task.dto';
 
@@ -12,6 +12,18 @@ export class TaskService {
   ) {}
 
   async create(userId: number, createTaskDto: CreateTaskDto): Promise<Task> {
+    // 1. Kiểm tra trùng tên công việc (hoặc trùng cả ngày/giờ nếu cần) của cùng user
+    const existingTask = await this.taskRepository.findOne({
+      where: {
+        userId,
+        title: createTaskDto.title, // Nếu tên thuộc tính trong DTO của bạn là taskName, hãy đổi thành createTaskDto.taskName
+      },
+    });
+
+    if (existingTask) {
+      throw new ConflictException('Công việc này đã tồn tại trong danh sách của bạn!');
+    }
+
     const newTask = this.taskRepository.create({
       ...createTaskDto,
       userId,
@@ -40,9 +52,23 @@ export class TaskService {
   }
 
   async update(userId: number, id: string, updateTaskDto: UpdateTaskDto): Promise<Task> {
-    const task = await this.findOne(userId, id); // Tái sử dụng hàm findOne để check tồn tại và quyền
+    const task = await this.findOne(userId, id); // Check tồn tại và quyền
 
-    // Cập nhật các trường mới vào đối tượng task cũ
+    // 2. Kiểm tra trùng tên với các công việc KHÁC của cùng user (trừ chính nó ra)
+    if (updateTaskDto.title) {
+      const duplicateTask = await this.taskRepository.findOne({
+        where: {
+          userId,
+          title: updateTaskDto.title,
+          id: Not(id), // Khác ID hiện tại
+        },
+      });
+
+      if (duplicateTask) {
+        throw new ConflictException('Tên công việc này đã bị trùng với một deadline khác!');
+      }
+    }
+
     Object.assign(task, updateTaskDto);
     return await this.taskRepository.save(task);
   }
