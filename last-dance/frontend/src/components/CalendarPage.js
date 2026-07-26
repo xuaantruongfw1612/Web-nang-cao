@@ -79,8 +79,6 @@ export default function CalendarPage() {
     return Array.from({ length: 7 }).map((_, i) => addDays(currentWeekStart, i));
   }, [currentWeekStart]);
 
-  const hours = Array.from({ length: 24 }).map((_, i) => i);
-
   const tasksThisWeek = useMemo(() => {
     const endOfWeek = addDays(currentWeekStart, 7);
     return tasks.filter((t) => {
@@ -89,6 +87,27 @@ export default function CalendarPage() {
       return d >= currentWeekStart && d < endOfWeek;
     });
   }, [tasks, currentWeekStart]);
+
+  // Tự động tính toán khung giờ động dựa trên các task có trong tuần
+  const dynamicHours = useMemo(() => {
+    if (tasksThisWeek.length === 0) return [];
+    let minH = 23;
+    let maxH = 0;
+    tasksThisWeek.forEach((t) => {
+      const d = new Date(t.taskDatetime);
+      const h = d.getHours();
+      if (h < minH) minH = h;
+      if (h > maxH) maxH = h;
+    });
+    // Mở rộng thêm 1 tiếng trước và 2 tiếng sau để giao diện thoáng mắt
+    const startH = Math.max(0, minH - 1);
+    const endH = Math.min(23, maxH + 2);
+    const hoursList = [];
+    for (let i = startH; i <= endH; i++) {
+      hoursList.push(i);
+    }
+    return hoursList;
+  }, [tasksThisWeek]);
 
   // Logic Lịch Mini dựa trên miniCalendarMonth thay vì currentWeekStart
   const miniCalendarDays = useMemo(() => {
@@ -144,6 +163,7 @@ export default function CalendarPage() {
         ) : (
           <div className="overflow-x-auto">
             <div className="min-w-[800px]">
+              {/* Header các ngày trong tuần */}
               <div className="grid grid-cols-8 border-b border-gray-200 bg-gray-50">
                 <div className="p-3 text-center border-r border-gray-200 flex flex-col justify-center">
                   <span className="text-xs text-gray-400 font-medium">Giờ VN</span>
@@ -160,54 +180,71 @@ export default function CalendarPage() {
                 ))}
               </div>
 
-              <div className="relative bg-white" style={{ height: `${hours.length * 80}px` }}>
-                {hours.map((hour, idx) => (
-                  <div key={hour} className="absolute w-full flex border-b border-gray-100" style={{ top: `${idx * 80}px`, height: '80px' }}>
-                    <div className="w-[12.5%] border-r border-gray-200 text-center py-2 relative">
-                      <span className="text-xs font-bold text-gray-600 absolute -top-3 left-1/2 -translate-x-1/2 bg-white px-1">
-                        {hour}:00
-                      </span>
+              {/* Rẽ nhánh hiển thị: Nếu không có lịch -> Hiển thị Empty State giống mẫu, Có lịch -> Hiển thị khung giờ động */}
+              {tasksThisWeek.length === 0 ? (
+                <div className="flex justify-center items-center py-24 bg-white">
+                  <div className="flex flex-col items-center justify-center p-8 border border-dashed border-gray-300 rounded-xl bg-white w-3/4 max-w-md shadow-sm">
+                    <div className="w-16 h-16 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mb-3">
+                      <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                      </svg>
                     </div>
-                    {Array.from({ length: 7 }).map((_, colIdx) => (
-                      <div key={colIdx} className="flex-1 border-r border-gray-100 last:border-r-0"></div>
-                    ))}
+                    <p className="text-gray-600 font-medium text-center text-sm">
+                      Hiện tại chưa có lịch học cá nhân nào trong tuần này
+                    </p>
                   </div>
-                ))}
+                </div>
+              ) : (
+                <div className="relative bg-white" style={{ height: `${dynamicHours.length * 80}px` }}>
+                  {dynamicHours.map((hour, idx) => (
+                    <div key={hour} className="absolute w-full flex border-b border-gray-100" style={{ top: `${idx * 80}px`, height: '80px' }}>
+                      <div className="w-[12.5%] border-r border-gray-200 text-center py-2 relative">
+                        <span className="text-xs font-bold text-gray-600 absolute -top-3 left-1/2 -translate-x-1/2 bg-white px-1">
+                          {hour}:00
+                        </span>
+                      </div>
+                      {Array.from({ length: 7 }).map((_, colIdx) => (
+                        <div key={colIdx} className="flex-1 border-r border-gray-100 last:border-r-0"></div>
+                      ))}
+                    </div>
+                  ))}
 
-                {tasksThisWeek.map((task) => {
-                  const dateObj = new Date(task.taskDatetime);
-                  const dayIndex = (dateObj.getDay() + 6) % 7; 
-                  const hour = dateObj.getHours();
-                  const minute = dateObj.getMinutes();
-                  
-                  const topPx = hour * 80 + (minute / 60) * 80;
-                  
-                  return (
-                    <div
-                      key={task.id}
-                      className="absolute p-1 z-10"
-                      style={{
-                        top: `${topPx}px`,
-                        left: `${12.5 + dayIndex * 12.5}%`,
-                        width: '12.5%',
-                        height: '70px',
-                      }}
-                    >
-                      <div className={`h-full w-full rounded-md shadow-sm border border-white/20 p-2 overflow-hidden text-white flex flex-col justify-between ${TYPE_COLORS[task.type] || 'bg-gray-600'}`}>
-                        <div>
-                          <div className="text-[11px] font-bold leading-tight line-clamp-2">
-                            {task.title}
-                          </div>
-                          <div className="text-[10px] opacity-90 mt-0.5">
-                            {hour.toString().padStart(2, '0')}:{minute.toString().padStart(2, '0')} 
-                            {task.room && ` • ${task.room}`}
+                  {tasksThisWeek.map((task) => {
+                    const dateObj = new Date(task.taskDatetime);
+                    const dayIndex = (dateObj.getDay() + 6) % 7; 
+                    const hour = dateObj.getHours();
+                    const minute = dateObj.getMinutes();
+                    
+                    const startHour = dynamicHours[0] || 0;
+                    const topPx = (hour - startHour) * 80 + (minute / 60) * 80;
+                    
+                    return (
+                      <div
+                        key={task.id}
+                        className="absolute p-1 z-10"
+                        style={{
+                          top: `${topPx}px`,
+                          left: `${12.5 + dayIndex * 12.5}%`,
+                          width: '12.5%',
+                          height: '70px',
+                        }}
+                      >
+                        <div className={`h-full w-full rounded-md shadow-sm border border-white/20 p-2 overflow-hidden text-white flex flex-col justify-between ${TYPE_COLORS[task.type] || 'bg-gray-600'}`}>
+                          <div>
+                            <div className="text-[11px] font-bold leading-tight line-clamp-2">
+                              {task.title}
+                            </div>
+                            <div className="text-[10px] opacity-90 mt-0.5">
+                              {hour.toString().padStart(2, '0')}:{minute.toString().padStart(2, '0')} 
+                              {task.room && ` • ${task.room}`}
+                            </div>
                           </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
         )}
