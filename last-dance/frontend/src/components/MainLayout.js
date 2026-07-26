@@ -7,7 +7,8 @@ const MainLayout = ({ children }) => {
   
   const isSubjectPage = location.pathname.startsWith('/subjects');
   const isCalendarPage = location.pathname.startsWith('/calendar');
-  const isTaskPage = !isSubjectPage && !isCalendarPage;
+  const isStatsPage = location.pathname.startsWith('/thong-ke'); // <-- Thêm nhận diện trang thống kê
+  const isTaskPage = !isSubjectPage && !isCalendarPage && !isStatsPage; // <-- Loại trừ thêm trang thống kê
 
   const submenuClass = (active) =>
     `flex w-full items-center gap-2 text-left transition ${
@@ -43,7 +44,7 @@ const MainLayout = ({ children }) => {
               </button>
             </li>
 
-            {/* LỊCH CÁ NHÂN (Đã được đưa ra ngoài cấp cao nhất) */}
+            {/* LỊCH CÁ NHÂN */}
             <li>
               <button
                 type="button"
@@ -55,7 +56,19 @@ const MainLayout = ({ children }) => {
               </button>
             </li>
 
-            {/* QUẢN LÝ DEADLINE (Bây giờ chỉ chứa 2 mục con) */}
+            {/* THỐNG KÊ (Ngang hàng Trang chủ và Lịch cá nhân) */}
+            <li>
+              <button
+                type="button"
+                onClick={() => navigate('/thong-ke')}
+                className={`flex w-full items-center gap-3 px-6 py-2.5 text-left hover:bg-white/10 ${isStatsPage ? 'text-orange-400 bg-white/5 font-medium' : 'text-gray-300'}`}
+              >
+                <span className={`h-4 w-4 rounded-sm ${isStatsPage ? 'bg-orange-400' : 'bg-gray-400'}`} />
+                Thống kê
+              </button>
+            </li>
+
+            {/* QUẢN LÝ DEADLINE */}
             <li className="mt-2 flex flex-col">
               <div className="flex items-center justify-between border-l-4 border-orange-500 bg-white/5 px-6 py-2.5 font-medium text-orange-400">
                 <div className="flex items-center gap-3">
@@ -141,10 +154,13 @@ const MainLayout = ({ children }) => {
           <span className="text-gray-500">Lịch trình</span>
           <span className="mx-2 text-gray-400">/</span>
           <span className="font-semibold text-blue-900">
+            {/* Logic hiển thị Breadcrumb cho đúng trang */}
             {isSubjectPage
               ? 'Danh mục Môn học'
               : isCalendarPage
               ? 'Lịch cá nhân'
+              : isStatsPage
+              ? 'Thống kê'
               : 'Danh sách công việc'}
           </span>
         </div>

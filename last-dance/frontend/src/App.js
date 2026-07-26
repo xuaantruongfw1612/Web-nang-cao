@@ -7,14 +7,10 @@ import RegisterPage from './pages/RegisterPage';
 import SubjectsPage from './pages/SubjectsPage';
 import NotificationsPage from './pages/NotificationsPage';
 import ProfilePage from './pages/ProfilePage';
-import DeadlineManager from './components/DeadlineManager';
-import CalendarPage from './components/CalendarPage'; // <-- THÊM DÒNG NÀY
+import StatisticsPage from './pages/StatisticsPage'; // <-- THÊM IMPORT TRANG THỐNG KÊ
 
-// TODO: sửa đường dẫn này cho khớp vị trí thật của MainLayout.js trong project.
-// Giả định MainLayout nhận children: <MainLayout>{...}</MainLayout>.
-// Nếu MainLayout dùng <Outlet /> (React Router lồng route) thay vì children,
-// đổi cấu trúc <Route> bên dưới sang dạng route cha/con lồng nhau là được,
-// các page con không cần sửa gì.
+import DeadlineManager from './components/DeadlineManager';
+import CalendarPage from './components/CalendarPage';
 import MainLayout from './components/MainLayout';
 
 function Protected({ children }) {
@@ -35,7 +31,9 @@ export default function App() {
 
           <Route path="/" element={<Protected><DeadlineManager /></Protected>} />
           <Route path="/subjects" element={<Protected><SubjectsPage /></Protected>} />
-          <Route path="/calendar" element={<Protected><CalendarPage /></Protected>} /> {/* <-- THÊM DÒNG NÀY */}
+          <Route path="/calendar" element={<Protected><CalendarPage /></Protected>} />
+          <Route path="/thong-ke" element={<Protected><StatisticsPage /></Protected>} /> {/* <-- THÊM ROUTE THỐNG KÊ */}
+          
           <Route path="/notifications" element={<Protected><NotificationsPage /></Protected>} />
           <Route path="/profile" element={<Protected><ProfilePage /></Protected>} />
 
