@@ -22,6 +22,15 @@ let TaskService = class TaskService {
         this.taskRepository = taskRepository;
     }
     async create(userId, createTaskDto) {
+        const existingTask = await this.taskRepository.findOne({
+            where: {
+                userId,
+                title: createTaskDto.title,
+            },
+        });
+        if (existingTask) {
+            throw new common_1.ConflictException('Công việc này đã tồn tại trong danh sách của bạn!');
+        }
         const newTask = this.taskRepository.create({
             ...createTaskDto,
             userId,
@@ -47,6 +56,18 @@ let TaskService = class TaskService {
     }
     async update(userId, id, updateTaskDto) {
         const task = await this.findOne(userId, id);
+        if (updateTaskDto.title) {
+            const duplicateTask = await this.taskRepository.findOne({
+                where: {
+                    userId,
+                    title: updateTaskDto.title,
+                    id: (0, typeorm_2.Not)(id),
+                },
+            });
+            if (duplicateTask) {
+                throw new common_1.ConflictException('Tên công việc này đã bị trùng với một deadline khác!');
+            }
+        }
         Object.assign(task, updateTaskDto);
         return await this.taskRepository.save(task);
     }
