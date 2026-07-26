@@ -26,8 +26,27 @@ export default function RegisterPage() {
       setSuccess(true);
       setTimeout(() => navigate('/login'), 1200);
     } catch (err) {
-      const msg = err.response?.data?.message || 'Đăng ký thất bại, vui lòng thử lại';
-      setError(Array.isArray(msg) ? msg.join(', ') : msg);
+      // Bóc tách dữ liệu lỗi từ Backend
+      const responseData = err.response?.data;
+      let safeErrorMessage = 'Đăng ký thất bại, vui lòng thử lại';
+
+      if (responseData) {
+        if (typeof responseData.message === 'string') {
+          // Lỗi trả về là một chuỗi bình thường
+          safeErrorMessage = responseData.message;
+        } else if (Array.isArray(responseData.message)) {
+          // Lỗi từ Class Validator (mảng các lỗi)
+          safeErrorMessage = responseData.message.join(', ');
+        } else if (typeof responseData === 'string') {
+          // Lỗi trả về nguyên một chuỗi
+          safeErrorMessage = responseData;
+        }
+      } else if (err.message) {
+        // Lỗi không có response (ví dụ: mất mạng)
+        safeErrorMessage = err.message;
+      }
+
+      setError(safeErrorMessage);
     } finally {
       setSubmitting(false);
     }

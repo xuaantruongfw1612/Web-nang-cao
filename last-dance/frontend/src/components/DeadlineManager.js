@@ -25,6 +25,8 @@ const TYPE_STYLE = {
   EXAM: 'bg-red-100 text-red-700',
 };
 
+const TASK_TYPES = ['ASSIGNMENT', 'STUDY', 'EXAM'];
+
 const emptyForm = {
   title: '',
   type: 'ASSIGNMENT',
@@ -34,9 +36,6 @@ const emptyForm = {
   subjectId: '',
 };
 
-// Task đã qua hạn nhưng chưa hoàn thành/huỷ -> hiển thị cảnh báo trực quan,
-// tương ứng logic Task.isOverdue() ở backend (API không serialize được method
-// của entity qua JSON nên tính lại phía client theo đúng công thức tương tự).
 function isOverdue(task) {
   if (task.status === 'COMPLETED' || task.status === 'CANCELLED') return false;
   return new Date(task.taskDatetime).getTime() < Date.now();
@@ -47,7 +46,9 @@ export default function DeadlineManager() {
   const [subjects, setSubjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  
   const [typeFilter, setTypeFilter] = useState('ALL');
+  const [sortOrder, setSortOrder] = useState('ASC'); // 'ASC': Gần nhất, 'DESC': Xa nhất
 
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -73,10 +74,20 @@ export default function DeadlineManager() {
     }
   }
 
-  const filteredTasks = useMemo(
-    () => (typeFilter === 'ALL' ? tasks : tasks.filter((t) => t.type === typeFilter)),
-    [tasks, typeFilter],
-  );
+  // Xử lý Lọc và Sắp xếp đồng thời
+  const filteredAndSortedTasks = useMemo(() => {
+    // 1. Lọc theo loại
+    let result = typeFilter === 'ALL' ? [...tasks] : tasks.filter((t) => t.type === typeFilter);
+
+    // 2. Sắp xếp theo hạn chót
+    result.sort((a, b) => {
+      const timeA = new Date(a.taskDatetime).getTime();
+      const timeB = new Date(b.taskDatetime).getTime();
+      return sortOrder === 'ASC' ? timeA - timeB : timeB - timeA;
+    });
+
+    return result;
+  }, [tasks, typeFilter, sortOrder]);
 
   function openCreate() {
     setEditing(null);
@@ -90,7 +101,6 @@ export default function DeadlineManager() {
     setForm({
       title: task.title,
       type: task.type || 'ASSIGNMENT',
-      // input[type=datetime-local] cần format "YYYY-MM-DDTHH:mm", cắt bớt giây/ms từ ISO string
       taskDatetime: task.taskDatetime ? task.taskDatetime.slice(0, 16) : '',
       room: task.room || '',
       notes: task.notes || '',
@@ -118,8 +128,22 @@ export default function DeadlineManager() {
       setShowModal(false);
       await loadAll();
     } catch (err) {
-      const msg = err.response?.data?.message || 'Có lỗi xảy ra, vui lòng thử lại';
-      setFormError(Array.isArray(msg) ? msg.join(', ') : msg);
+      const responseData = err.response?.data;
+      let safeErrorMessage = 'Có lỗi xảy ra, vui lòng thử lại';
+
+      if (responseData) {
+        if (typeof responseData.message === 'string') {
+          safeErrorMessage = responseData.message;
+        } else if (Array.isArray(responseData.message)) {
+          safeErrorMessage = responseData.message.join(', ');
+        } else if (typeof responseData === 'string') {
+          safeErrorMessage = responseData;
+        }
+      } else if (err.message) {
+        safeErrorMessage = err.message;
+      }
+
+      setFormError(safeErrorMessage);
     } finally {
       setSubmitting(false);
     }
@@ -144,32 +168,44 @@ export default function DeadlineManager() {
     }
   }
 
-  const distinctTypes = useMemo(
-    () => [...new Set(tasks.map((t) => t.type).filter(Boolean))],
-    [tasks],
-  );
-
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-      {/* BỘ LỌC VÀ NÚT THÊM */}
+      {/* BỘ LỌC, SẮP XẾP VÀ NÚT THÊM */}
       <div className="flex flex-wrap items-center justify-between mb-6 pb-4 border-b border-gray-100 gap-4">
-        <div>
-          <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">
-            Lọc theo loại
-          </label>
-          <select
-            value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value)}
-            className="border border-gray-300 rounded-md px-3 py-1.5 text-sm w-[200px] focus:outline-none focus:border-blue-500 text-gray-700"
-          >
-            <option value="ALL">Tất cả</option>
-            {distinctTypes.map((t) => (
-              <option key={t} value={t}>
-                {t}
-              </option>
-            ))}
-          </select>
+        <div className="flex items-center gap-4">
+          <div>
+            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">
+              Lọc theo loại
+            </label>
+            <select
+              value={typeFilter}
+              onChange={(e) => setTypeFilter(e.target.value)}
+              className="border border-gray-300 rounded-md px-3 py-1.5 text-sm w-[160px] focus:outline-none focus:border-blue-500 text-gray-700"
+            >
+              <option value="ALL">Tất cả</option>
+              {TASK_TYPES.map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
+            </select>
+          </div>
+          
+          <div>
+            <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">
+              Sắp xếp hạn chót
+            </label>
+            <select
+              value={sortOrder}
+              onChange={(e) => setSortOrder(e.target.value)}
+              className="border border-gray-300 rounded-md px-3 py-1.5 text-sm w-[160px] focus:outline-none focus:border-blue-500 text-gray-700"
+            >
+              <option value="ASC">Gần nhất</option>
+              <option value="DESC">Xa nhất</option>
+            </select>
+          </div>
         </div>
+
         <button
           onClick={openCreate}
           className="bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm px-4 py-2 rounded-md shadow-sm transition"
@@ -180,12 +216,20 @@ export default function DeadlineManager() {
 
       {loading && <p className="text-sm text-gray-400">Đang tải...</p>}
       {error && <p className="text-sm text-red-600">{error}</p>}
-      {!loading && !error && filteredTasks.length === 0 && (
-        <p className="text-sm text-gray-400">Chưa có công việc nào. Bấm "Thêm Deadline mới" để bắt đầu.</p>
+      
+      {/* HIỂN THỊ LỖI KHI TRỐNG THÔNG MINH */}
+      {!loading && !error && filteredAndSortedTasks.length === 0 && (
+        <div className="py-8 text-center bg-gray-50 rounded-lg border border-dashed border-gray-200">
+          <p className="text-sm text-gray-500">
+            {typeFilter === 'ALL' 
+              ? 'Chưa có công việc nào. Bấm "Thêm Deadline mới" để bắt đầu.'
+              : `Chưa có công việc ${typeFilter} nào, hãy thêm deadline mới.`}
+          </p>
+        </div>
       )}
 
       {/* BẢNG DANH SÁCH (TABLE) */}
-      {!loading && filteredTasks.length > 0 && (
+      {!loading && filteredAndSortedTasks.length > 0 && (
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left border-collapse">
             <thead className="bg-gray-50 text-gray-500 font-semibold border-y border-gray-200 uppercase text-xs">
@@ -199,7 +243,7 @@ export default function DeadlineManager() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
-              {filteredTasks.map((item, index) => (
+              {filteredAndSortedTasks.map((item, index) => (
                 <tr key={item.id} className="hover:bg-gray-50 transition">
                   <td className="px-4 py-4 text-center text-gray-500 font-medium">{index + 1}</td>
                   <td className="px-4 py-4">
@@ -209,7 +253,6 @@ export default function DeadlineManager() {
                     )}
                   </td>
 
-                  {/* Badge Loại */}
                   <td className="px-4 py-4 text-center">
                     <span
                       className={`text-[11px] font-bold px-2.5 py-1 rounded-md uppercase ${TYPE_STYLE[item.type] || 'bg-gray-100 text-gray-600'}`}
@@ -225,7 +268,6 @@ export default function DeadlineManager() {
                     )}
                   </td>
 
-                  {/* Badge Trạng thái */}
                   <td className="px-4 py-4 text-center">
                     <span
                       className={`text-[11px] font-bold px-3 py-1 rounded-full uppercase ${STATUS_STYLE[item.status] || 'bg-gray-100 text-gray-500'}`}
@@ -234,7 +276,6 @@ export default function DeadlineManager() {
                     </span>
                   </td>
 
-                  {/* Nút Thao tác */}
                   <td className="px-4 py-4 text-center">
                     <div className="flex items-center justify-center gap-3 text-sm">
                       {item.status !== 'COMPLETED' && (
