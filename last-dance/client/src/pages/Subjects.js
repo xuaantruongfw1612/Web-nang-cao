@@ -195,7 +195,7 @@ function Subjects() {
               Chưa có môn học nào
             </h3>
             <p className="mt-1 text-sm text-gray-500">
-              Tạo môn học đầu tiên để bắt đầu phân loại deadline.
+              Tạo môn học đầu tiên để bắt đầu phân loại deadline của bạn.
             </p>
             <button
               type="button"
