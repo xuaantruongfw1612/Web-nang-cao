@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import Button from '../components/ui/Button';
+import { extractErrorMessage } from '../utils/errors';
 
 const initialForm = { studentCode: '', fullName: '', email: '', password: '' };
 
@@ -26,27 +28,7 @@ export default function RegisterPage() {
       setSuccess(true);
       setTimeout(() => navigate('/login'), 1200);
     } catch (err) {
-      // Bóc tách dữ liệu lỗi từ Backend
-      const responseData = err.response?.data;
-      let safeErrorMessage = 'Đăng ký thất bại, vui lòng thử lại';
-
-      if (responseData) {
-        if (typeof responseData.message === 'string') {
-          // Lỗi trả về là một chuỗi bình thường
-          safeErrorMessage = responseData.message;
-        } else if (Array.isArray(responseData.message)) {
-          // Lỗi từ Class Validator (mảng các lỗi)
-          safeErrorMessage = responseData.message.join(', ');
-        } else if (typeof responseData === 'string') {
-          // Lỗi trả về nguyên một chuỗi
-          safeErrorMessage = responseData;
-        }
-      } else if (err.message) {
-        // Lỗi không có response (ví dụ: mất mạng)
-        safeErrorMessage = err.message;
-      }
-
-      setError(safeErrorMessage);
+      setError(extractErrorMessage(err, 'Đăng ký thất bại, vui lòng thử lại'));
     } finally {
       setSubmitting(false);
     }
@@ -54,17 +36,21 @@ export default function RegisterPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-sm bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+      <div className="w-full max-w-sm bg-white rounded-xl shadow-sm border border-gray-100 p-8">
+        <div className="mb-6">
+          <p className="text-lg font-bold text-[#1e2a5e] leading-tight">Student</p>
+          <p className="text-lg font-bold text-orange-500 leading-tight">Deadline Manager</p>
+        </div>
         <h1 className="text-xl font-bold text-gray-800 mb-1">Đăng ký tài khoản</h1>
-        <p className="text-sm text-gray-500 mb-6">Student Deadline Manager</p>
+        <p className="text-sm text-gray-400 mb-6">Bắt đầu quản lý deadline của bạn</p>
 
         {error && (
-          <div className="mb-4 text-sm text-red-700 bg-red-50 border border-red-200 rounded-md px-3 py-2">
+          <div className="mb-4 text-sm text-red-700 bg-red-50 border border-red-100 rounded-lg px-3 py-2">
             {error}
           </div>
         )}
         {success && (
-          <div className="mb-4 text-sm text-green-700 bg-green-50 border border-green-200 rounded-md px-3 py-2">
+          <div className="mb-4 text-sm text-green-700 bg-green-50 border border-green-100 rounded-lg px-3 py-2">
             Đăng ký thành công! Đang chuyển tới trang đăng nhập...
           </div>
         )}
@@ -80,7 +66,7 @@ export default function RegisterPage() {
               required
               value={form.studentCode}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400"
               placeholder="SV001"
             />
           </div>
@@ -95,7 +81,7 @@ export default function RegisterPage() {
               required
               value={form.fullName}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400"
               placeholder="Nguyễn Văn A"
             />
           </div>
@@ -110,7 +96,7 @@ export default function RegisterPage() {
               required
               value={form.email}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400"
               placeholder="ban@gmail.com"
             />
           </div>
@@ -126,23 +112,19 @@ export default function RegisterPage() {
               minLength={6}
               value={form.password}
               onChange={handleChange}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400"
               placeholder="Tối thiểu 6 ký tự"
             />
           </div>
 
-          <button
-            type="submit"
-            disabled={submitting}
-            className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-medium text-sm px-4 py-2 rounded-md shadow-sm transition"
-          >
+          <Button type="submit" disabled={submitting} className="w-full">
             {submitting ? 'Đang đăng ký...' : 'Đăng ký'}
-          </button>
+          </Button>
         </form>
 
         <p className="text-sm text-gray-500 mt-6 text-center">
           Đã có tài khoản?{' '}
-          <Link to="/login" className="text-blue-600 font-medium hover:underline">
+          <Link to="/login" className="text-orange-600 font-semibold hover:underline">
             Đăng nhập
           </Link>
         </p>

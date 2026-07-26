@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { authApi } from '../api/authApi';
 import { useAuth } from '../context/AuthContext';
+import Card from '../components/ui/Card';
+import Button from '../components/ui/Button';
+import { extractErrorMessage } from '../utils/errors';
 
 export default function ProfilePage() {
   const { user, setUser, logout } = useAuth();
@@ -28,7 +31,7 @@ export default function ProfilePage() {
       setUser(updated);
       setProfileMsg('Đã cập nhật hồ sơ');
     } catch (err) {
-      setProfileError(err.response?.data?.message || 'Không cập nhật được hồ sơ');
+      setProfileError(extractErrorMessage(err, 'Không cập nhật được hồ sơ'));
     } finally {
       setSavingProfile(false);
     }
@@ -45,8 +48,7 @@ export default function ProfilePage() {
       setPwForm({ oldPassword: '', newPassword: '' });
       setTimeout(() => logout(), 1500);
     } catch (err) {
-      const msg = err.response?.data?.message || 'Đổi mật khẩu thất bại';
-      setPwError(Array.isArray(msg) ? msg.join(', ') : msg);
+      setPwError(extractErrorMessage(err, 'Đổi mật khẩu thất bại'));
     } finally {
       setSavingPw(false);
     }
@@ -54,7 +56,7 @@ export default function ProfilePage() {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <Card className="p-6">
         <h2 className="font-bold text-gray-800 mb-4 pb-4 border-b border-gray-100">Hồ sơ cá nhân</h2>
 
         <div className="mb-4 text-sm text-gray-500 space-y-1">
@@ -74,7 +76,7 @@ export default function ProfilePage() {
               type="text"
               value={profileForm.fullName}
               onChange={(e) => setProfileForm({ ...profileForm, fullName: e.target.value })}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400"
             />
           </div>
           <div>
@@ -85,21 +87,17 @@ export default function ProfilePage() {
               type="text"
               value={profileForm.avatarUrl}
               onChange={(e) => setProfileForm({ ...profileForm, avatarUrl: e.target.value })}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400"
               placeholder="https://..."
             />
           </div>
-          <button
-            type="submit"
-            disabled={savingProfile}
-            className="bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-medium text-sm px-4 py-2 rounded-md shadow-sm transition"
-          >
+          <Button type="submit" disabled={savingProfile}>
             {savingProfile ? 'Đang lưu...' : 'Lưu hồ sơ'}
-          </button>
+          </Button>
         </form>
-      </div>
+      </Card>
 
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <Card className="p-6">
         <h2 className="font-bold text-gray-800 mb-4 pb-4 border-b border-gray-100">Đổi mật khẩu</h2>
 
         {pwMsg && <p className="mb-3 text-sm text-green-700">{pwMsg}</p>}
@@ -115,7 +113,7 @@ export default function ProfilePage() {
               required
               value={pwForm.oldPassword}
               onChange={(e) => setPwForm({ ...pwForm, oldPassword: e.target.value })}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400"
             />
           </div>
           <div>
@@ -128,18 +126,14 @@ export default function ProfilePage() {
               minLength={6}
               value={pwForm.newPassword}
               onChange={(e) => setPwForm({ ...pwForm, newPassword: e.target.value })}
-              className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400"
             />
           </div>
-          <button
-            type="submit"
-            disabled={savingPw}
-            className="bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-medium text-sm px-4 py-2 rounded-md shadow-sm transition"
-          >
+          <Button type="submit" disabled={savingPw}>
             {savingPw ? 'Đang lưu...' : 'Đổi mật khẩu'}
-          </button>
+          </Button>
         </form>
-      </div>
+      </Card>
     </div>
   );
 }
