@@ -50,17 +50,53 @@ export default function SubjectsPage() {
     e.preventDefault();
     setFormError('');
     setSubmitting(true);
+    
     try {
+      const payload = {
+        ...form,
+        name: form.name.trim(),
+        icon: form.icon.trim()
+      };
+
       if (editing) {
-        await subjectApi.update(editing.id, form);
+        await subjectApi.update(editing.id, payload);
       } else {
-        await subjectApi.create(form);
+        await subjectApi.create(payload);
       }
       setShowModal(false);
       await loadSubjects();
     } catch (err) {
-      const msg = err.response?.data?.message || 'Có lỗi xảy ra, vui lòng thử lại';
-      setFormError(Array.isArray(msg) ? msg.join(', ') : msg);
+      let msg = 'Có lỗi xảy ra, vui lòng thử lại';
+      let responseData = err.response?.data;
+
+      // Ép kiểu JSON nếu backend trả về một chuỗi dạng JSON
+      if (typeof responseData === 'string') {
+        try {
+          responseData = JSON.parse(responseData);
+        } catch (parseError) {
+          // Bỏ qua nếu không parse được
+        }
+      }
+
+      // Trích xuất đúng trường message
+      if (responseData && responseData.message) {
+        msg = Array.isArray(responseData.message) ? responseData.message.join(', ') : responseData.message;
+      } else if (typeof responseData === 'string') {
+        msg = responseData;
+      } else if (responseData && typeof responseData === 'object') {
+        msg = responseData.error || JSON.stringify(responseData);
+      }
+
+      // Ép kiểu tuyệt đối về String để tránh lỗi 'includes is not a function'
+      const safeMsg = typeof msg === 'string' ? msg : JSON.stringify(msg);
+
+      // Đề phòng lỗi trùng từ TypeORM chưa được format
+      if (safeMsg.includes('uq_user_subject') || safeMsg.includes('Duplicate entry') || safeMsg.includes('Tên môn học đã tồn tại')) {
+        setFormError('Tên môn học đã tồn tại, vui lòng chọn tên khác.');
+      } else {
+        setFormError(safeMsg);
+      }
+      
     } finally {
       setSubmitting(false);
     }
@@ -132,7 +168,7 @@ export default function SubjectsPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">
-                Tên môn học
+                Tên môn học <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -140,16 +176,17 @@ export default function SubjectsPage() {
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
                 className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
-                placeholder="Phát triển Web nâng cao"
+                placeholder="Ví dụ: Hệ điều hành"
               />
             </div>
             <div className="flex gap-4">
               <div className="flex-1">
                 <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">
-                  Màu
+                  Màu <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="color"
+                  required
                   value={form.color}
                   onChange={(e) => setForm({ ...form, color: e.target.value })}
                   className="w-full h-9 border border-gray-300 rounded-md cursor-pointer"
@@ -157,14 +194,15 @@ export default function SubjectsPage() {
               </div>
               <div className="flex-1">
                 <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">
-                  Icon
+                  Icon <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
+                  required
                   value={form.icon}
                   onChange={(e) => setForm({ ...form, icon: e.target.value })}
                   className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-blue-500"
-                  placeholder="book"
+                  placeholder="Ví dụ: book"
                 />
               </div>
             </div>
