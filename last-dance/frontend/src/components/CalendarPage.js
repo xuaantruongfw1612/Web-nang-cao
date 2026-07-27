@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { taskApi } from '../api/taskApi';
+import Modal from './Modal'; // Import Modal để hiển thị chi tiết
 
 const TYPE_COLORS = {
   ASSIGNMENT: 'bg-blue-600',
@@ -29,6 +30,9 @@ export default function CalendarPage() {
   // TÁCH BIỆT 2 TRẠNG THÁI: Lịch Lớn (theo tuần) và Lịch Nhỏ (theo tháng)
   const [currentWeekStart, setCurrentWeekStart] = useState(getStartOfWeek(new Date()));
   const [miniCalendarMonth, setMiniCalendarMonth] = useState(new Date());
+
+  // State quản lý việc hiển thị chi tiết khi click vào lịch
+  const [selectedTask, setSelectedTask] = useState(null);
 
   useEffect(() => {
     loadTasks();
@@ -180,7 +184,7 @@ export default function CalendarPage() {
                 ))}
               </div>
 
-              {/* Rẽ nhánh hiển thị: Nếu không có lịch -> Hiển thị Empty State giống mẫu, Có lịch -> Hiển thị khung giờ động */}
+              {/* Rẽ nhánh hiển thị */}
               {tasksThisWeek.length === 0 ? (
                 <div className="flex justify-center items-center py-24 bg-white">
                   <div className="flex flex-col items-center justify-center p-8 border border-dashed border-gray-300 rounded-xl bg-white w-3/4 max-w-md shadow-sm">
@@ -221,7 +225,8 @@ export default function CalendarPage() {
                     return (
                       <div
                         key={task.id}
-                        className="absolute p-1 z-10"
+                        onClick={() => setSelectedTask(task)} // Thêm sự kiện click
+                        className="absolute p-1 z-10 cursor-pointer hover:opacity-90 hover:scale-[1.02] transition-transform"
                         style={{
                           top: `${topPx}px`,
                           left: `${12.5 + dayIndex * 12.5}%`,
@@ -285,6 +290,51 @@ export default function CalendarPage() {
           })}
         </div>
       </div>
+
+      {/* MODAL HIỂN THỊ CHI TIẾT */}
+      {selectedTask && (
+        <Modal title="Chi tiết lịch trình" onClose={() => setSelectedTask(null)}>
+          <div className="space-y-4 text-sm text-gray-700">
+            <div>
+              <span className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Tên lịch trình</span>
+              <span className="font-medium text-base text-gray-900">{selectedTask.title}</span>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <span className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Loại</span>
+                <span className="font-medium inline-block px-2 py-1 bg-gray-100 rounded text-gray-700">
+                  {selectedTask.type}
+                </span>
+              </div>
+              <div>
+                <span className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">
+                  {selectedTask.type === 'ASSIGNMENT' ? 'Hạn chót' : 'Thời gian bắt đầu'}
+                </span>
+                <span className="font-medium text-blue-600">
+                  {new Date(selectedTask.taskDatetime).toLocaleString('vi-VN')}
+                </span>
+              </div>
+            </div>
+
+            {selectedTask.room && (
+              <div>
+                <span className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Phòng / Địa điểm</span>
+                <span className="font-medium">{selectedTask.room}</span>
+              </div>
+            )}
+            
+            {selectedTask.notes && (
+              <div>
+                <span className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Ghi chú</span>
+                <div className="p-3 bg-gray-50 rounded-lg border border-gray-100 whitespace-pre-wrap">
+                  {selectedTask.notes}
+                </div>
+              </div>
+            )}
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }

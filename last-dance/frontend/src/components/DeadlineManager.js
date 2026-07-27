@@ -28,8 +28,6 @@ const emptyForm = {
   subjectId: '',
 };
 
-// Tương ứng Task.isOverdue() ở backend - tính lại phía client vì API không
-// serialize method của entity qua JSON.
 function isOverdue(task) {
   if (task.status === 'COMPLETED' || task.status === 'CANCELLED') return false;
   return new Date(task.taskDatetime).getTime() < Date.now();
@@ -42,7 +40,7 @@ export default function DeadlineManager() {
   const [error, setError] = useState('');
 
   const [typeFilter, setTypeFilter] = useState('ALL');
-  const [sortOrder, setSortOrder] = useState('ASC'); // 'ASC': Gần nhất, 'DESC': Xa nhất
+  const [sortOrder, setSortOrder] = useState('ASC');
 
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -57,18 +55,26 @@ export default function DeadlineManager() {
   async function loadAll() {
     setLoading(true);
     setError('');
+    
+    // Tách riêng việc tải môn học và công việc để tránh lỗi chéo
     try {
-      const [taskList, subjectList] = await Promise.all([taskApi.getAll(), subjectApi.getAll()]);
-      setTasks(taskList);
+      const subjectList = await subjectApi.getAll();
       setSubjects(subjectList);
-    } catch {
+    } catch (err) {
+      console.error('Lỗi khi tải môn học:', err);
+    }
+
+    try {
+      const taskList = await taskApi.getAll();
+      setTasks(taskList);
+    } catch (err) {
+      console.error('Lỗi khi tải công việc:', err);
       setError('Không tải được danh sách công việc');
     } finally {
       setLoading(false);
     }
   }
 
-  // Lọc theo loại + sắp xếp theo hạn chót, tính lại mỗi khi 1 trong 3 phụ thuộc đổi
   const filteredAndSortedTasks = useMemo(() => {
     const result = typeFilter === 'ALL' ? [...tasks] : tasks.filter((t) => t.type === typeFilter);
     result.sort((a, b) => {
@@ -104,12 +110,36 @@ export default function DeadlineManager() {
     e.preventDefault();
     setFormError('');
     setSubmitting(true);
+
+    const isLocationRequired = form.type === 'EXAM' || form.type === 'STUDY';
+
+    if (isLocationRequired && !form.room.trim()) {
+      setFormError('Vui lòng nhập Phòng / Địa điểm cho Lịch thi hoặc Lịch học.');
+      setSubmitting(false);
+      return;
+    }
+
+    const formTime = new Date(form.taskDatetime).getTime();
+    const isDuplicateTime = tasks.some((t) => {
+      if (editing && t.id === editing.id) return false;
+      return new Date(t.taskDatetime).getTime() === formTime;
+    });
+
+    if (isDuplicateTime) {
+      const confirmMsg = 'Cảnh báo trùng lịch: Bạn đã có công việc/lịch khác vào đúng thời gian này. Tiếp tục thêm?';
+      if (!window.confirm(confirmMsg)) {
+        setSubmitting(false);
+        return;
+      }
+    }
+
     try {
       const payload = {
         ...form,
         taskDatetime: new Date(form.taskDatetime).toISOString(),
         subjectId: form.subjectId ? Number(form.subjectId) : undefined,
       };
+      
       if (editing) {
         await taskApi.update(editing.id, payload);
       } else {
@@ -143,12 +173,14 @@ export default function DeadlineManager() {
     }
   }
 
+  const isLocationRequired = form.type === 'EXAM' || form.type === 'STUDY';
+  const hasLocationError = formError.includes('Phòng / Địa điểm');
+
   return (
     <div>
       <PageHeader title="Deadline" subtitle="Danh sách công việc và hạn chót của bạn" />
 
       <Card className="p-6">
-        {/* BỘ LỌC, SẮP XẾP VÀ NÚT THÊM */}
         <div className="flex flex-wrap items-center justify-between mb-6 pb-4 border-b border-gray-100 gap-4">
           <div className="flex items-center gap-4">
             <div>
@@ -158,7 +190,7 @@ export default function DeadlineManager() {
               <select
                 value={typeFilter}
                 onChange={(e) => setTypeFilter(e.target.value)}
-                className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm w-[160px] focus:outline-none focus:border-orange-400 text-gray-700"
+                className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm w-[160px] focus:outline-none focus:border-pink-500 text-gray-700"
               >
                 <option value="ALL">Tất cả</option>
                 {TASK_TYPES.map((t) => (
@@ -176,7 +208,7 @@ export default function DeadlineManager() {
               <select
                 value={sortOrder}
                 onChange={(e) => setSortOrder(e.target.value)}
-                className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm w-[160px] focus:outline-none focus:border-orange-400 text-gray-700"
+                className="border border-gray-200 rounded-lg px-3 py-1.5 text-sm w-[160px] focus:outline-none focus:border-pink-500 text-gray-700"
               >
                 <option value="ASC">Gần nhất</option>
                 <option value="DESC">Xa nhất</option>
@@ -184,7 +216,9 @@ export default function DeadlineManager() {
             </div>
           </div>
 
-          <Button onClick={openCreate}>+ Thêm Deadline mới</Button>
+          <Button onClick={openCreate} className="bg-pink-500 hover:bg-pink-600 text-white">
+            + Thêm Deadline mới
+          </Button>
         </div>
 
         {loading && <p className="text-sm text-gray-400">Đang tải...</p>}
@@ -193,9 +227,7 @@ export default function DeadlineManager() {
         {!loading && !error && filteredAndSortedTasks.length === 0 && (
           <div className="py-8 text-center bg-gray-50 rounded-lg border border-dashed border-gray-200">
             <p className="text-sm text-gray-500">
-              {typeFilter === 'ALL'
-                ? 'Chưa có công việc nào. Bấm "Thêm Deadline mới" để bắt đầu.'
-                : `Chưa có công việc ${typeFilter} nào, hãy thêm deadline mới.`}
+              Chưa có công việc nào. Bấm "Thêm Deadline mới" để bắt đầu.
             </p>
           </div>
         )}
@@ -208,7 +240,7 @@ export default function DeadlineManager() {
                   <th className="px-4 py-3 text-center w-16">STT</th>
                   <th className="px-4 py-3">Tên công việc</th>
                   <th className="px-4 py-3 text-center">Loại</th>
-                  <th className="px-4 py-3 text-center">Hạn chót</th>
+                  <th className="px-4 py-3 text-center">Thời gian</th>
                   <th className="px-4 py-3 text-center">Trạng thái</th>
                   <th className="px-4 py-3 text-center">Thao tác</th>
                 </tr>
@@ -244,7 +276,7 @@ export default function DeadlineManager() {
                             onClick={() => handleMarkDone(item)}
                             className="text-green-600 hover:underline font-semibold"
                           >
-                            Hoàn thành
+                            Xong
                           </button>
                         )}
                         <button
@@ -279,27 +311,27 @@ export default function DeadlineManager() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">
-                Tên công việc
+                Tên công việc <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
                 required
                 value={form.title}
                 onChange={(e) => setForm({ ...form, title: e.target.value })}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400"
-                placeholder="Hoàn thiện file báo cáo"
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500"
+                placeholder="Ví dụ: Hoàn thiện file báo cáo"
               />
             </div>
 
-            <div className="flex gap-4">
-              <div className="flex-1">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="min-w-0">
                 <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">
-                  Loại
+                  Loại <span className="text-red-500">*</span>
                 </label>
                 <select
                   value={form.type}
                   onChange={(e) => setForm({ ...form, type: e.target.value })}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500"
                 >
                   {TASK_TYPES.map((t) => (
                     <option key={t} value={t}>
@@ -308,14 +340,15 @@ export default function DeadlineManager() {
                   ))}
                 </select>
               </div>
-              <div className="flex-1">
+              <div className="min-w-0">
                 <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">
-                  Môn học
+                  Môn học <span className="text-red-500">*</span>
                 </label>
                 <select
+                  required
                   value={form.subjectId}
                   onChange={(e) => setForm({ ...form, subjectId: e.target.value })}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500"
                 >
                   <option value="">— Không chọn —</option>
                   {subjects.map((s) => (
@@ -327,45 +360,51 @@ export default function DeadlineManager() {
               </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">
-                Hạn chót
-              </label>
-              <input
-                type="datetime-local"
-                required
-                value={form.taskDatetime}
-                onChange={(e) => setForm({ ...form, taskDatetime: e.target.value })}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400"
-              />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="min-w-0 col-span-2 sm:col-span-1">
+                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">
+                  {form.type === 'ASSIGNMENT' ? 'Hạn chót' : 'Thời gian bắt đầu'} <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="datetime-local"
+                  required
+                  value={form.taskDatetime}
+                  onChange={(e) => setForm({ ...form, taskDatetime: e.target.value })}
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500"
+                />
+              </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">
-                Phòng / Địa điểm
+              <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+                Phòng / Địa điểm {isLocationRequired && <span className="text-red-500 text-sm">*</span>}
               </label>
               <input
                 type="text"
                 value={form.room}
                 onChange={(e) => setForm({ ...form, room: e.target.value })}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400"
-                placeholder="P.302 - A1 (không bắt buộc)"
+                className={`w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 transition-colors ${
+                  hasLocationError
+                    ? 'border-red-500 focus:border-red-500 focus:ring-red-500 bg-red-50'
+                    : 'border-gray-200 focus:border-pink-500 focus:ring-pink-500'
+                }`}
+                placeholder={isLocationRequired ? 'Vd: P.302 - A1 (* Bắt buộc)' : 'Vd: P.302 - A1 (không bắt buộc)'}
               />
             </div>
 
             <div>
               <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">
-                Ghi chú
+                Ghi chú <span className="text-gray-400 text-[10px] lowercase font-normal">(không bắt buộc)</span>
               </label>
               <textarea
                 value={form.notes}
                 onChange={(e) => setForm({ ...form, notes: e.target.value })}
                 rows={2}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400"
+                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500"
               />
             </div>
 
-            <Button type="submit" disabled={submitting} className="w-full">
+            <Button type="submit" disabled={submitting} className="w-full bg-pink-500 hover:bg-pink-600 text-white border-transparent">
               {submitting ? 'Đang lưu...' : 'Lưu'}
             </Button>
           </form>

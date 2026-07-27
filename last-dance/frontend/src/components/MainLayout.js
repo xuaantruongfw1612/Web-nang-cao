@@ -15,7 +15,9 @@ const MainLayout = ({ children }) => {
   const isCalendarPage = location.pathname.startsWith('/calendar');
   const isNotificationsPage = location.pathname.startsWith('/notifications');
   const isProfilePage = location.pathname.startsWith('/profile');
-  const isDeadlineSection = isTasksPage || isSubjectPage || isStatisticsPage;
+  
+  // Đã gỡ bỏ isStatisticsPage khỏi mục Quản lý Deadline
+  const isDeadlineSection = isTasksPage || isSubjectPage;
 
   const breadcrumbLabel = isDashboard
     ? 'Trang chủ'
@@ -108,13 +110,19 @@ const MainLayout = ({ children }) => {
                     Danh mục Môn học
                   </button>
                 </li>
-                <li>
-                  <button type="button" onClick={() => navigate('/statistics')} className={submenuClass(isStatisticsPage)}>
-                    <span className={`h-1.5 w-1.5 rounded-full ${isStatisticsPage ? 'bg-pink-400' : 'bg-gray-400'}`} />
-                    Thống kê
-                  </button>
-                </li>
               </ul>
+            </li>
+
+            {/* THỐNG KÊ (Đã đưa ra ngoài) */}
+            <li>
+              <button
+                type="button"
+                onClick={() => navigate('/statistics')}
+                className={`flex w-full items-center gap-3 px-6 py-2.5 text-left hover:bg-white/10 ${isStatisticsPage ? 'text-pink-400 bg-white/5 font-medium' : 'text-gray-300'}`}
+              >
+                <span className={`h-4 w-4 rounded-sm ${isStatisticsPage ? 'bg-pink-400' : 'bg-gray-400'}`} />
+                Thống kê
+              </button>
             </li>
 
             {/* NHẮC NHỞ */}
@@ -162,16 +170,16 @@ const MainLayout = ({ children }) => {
                 className="flex cursor-pointer items-center gap-2 text-gray-200 hover:text-white"
               >
                 {user?.avatarUrl ? (
-  <img 
-    src={user.avatarUrl} 
-    alt="Avatar" 
-    className="h-8 w-8 rounded-full object-cover shadow-sm border border-gray-200"
-  />
-) : (
-  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-pink-600 text-xs font-bold text-white">
-    {(user?.fullName || '?').slice(0, 1).toUpperCase()}
-  </div>
-)}
+                  <img 
+                    src={user.avatarUrl} 
+                    alt="Avatar" 
+                    className="h-8 w-8 rounded-full object-cover shadow-sm border border-gray-200"
+                  />
+                ) : (
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-pink-600 text-xs font-bold text-white">
+                    {(user?.fullName || '?').slice(0, 1).toUpperCase()}
+                  </div>
+                )}
                 <div className="flex flex-col text-left">
                   <span className="text-xs font-semibold">{user?.fullName || 'Sinh viên'}</span>
                   <span className="text-[10px] text-gray-300">{user?.studentCode}</span>
