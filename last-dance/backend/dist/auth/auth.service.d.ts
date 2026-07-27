@@ -23,6 +23,7 @@ export declare class AuthService {
     refreshTokens(dto: RefreshTokenDto): Promise<TokenPair>;
     logout(userId: number): Promise<boolean>;
     updateProfile(userId: number, dto: UpdateProfileDto): Promise<User>;
+    getProfile(userId: number): Promise<User>;
     changePassword(userId: number, dto: ChangePasswordDto): Promise<boolean>;
     private generateTokenPair;
     private storeRefreshToken;

@@ -1,11 +1,11 @@
 const COLORS = {
-  orange: 'bg-orange-50 text-orange-600',
+  pink: 'bg-pink-50 text-pink-600',
   red: 'bg-red-50 text-red-600',
   green: 'bg-green-50 text-green-600',
   blue: 'bg-blue-50 text-blue-600',
 };
 
-export default function StatCard({ label, value, icon, color = 'orange' }) {
+export default function StatCard({ label, value, icon, color = 'pink' }) {
   return (
     <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex items-center gap-4">
       <div className={`w-11 h-11 rounded-lg flex items-center justify-center text-lg shrink-0 ${COLORS[color]}`}>

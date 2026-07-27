@@ -31,7 +31,7 @@ exports.AppModule = AppModule = __decorate([
                 useFactory: database_config_1.getDatabaseConfig,
             }),
             schedule_1.ScheduleModule.forRoot(),
-            throttler_1.ThrottlerModule.forRoot([{ name: 'default', ttl: 60000, limit: 20 }]),
+            throttler_1.ThrottlerModule.forRoot([{ name: 'default', ttl: 60000, limit: 1000 }]),
             auth_module_1.AuthModule,
             notification_module_1.NotificationModule,
             subject_module_1.SubjectModule,

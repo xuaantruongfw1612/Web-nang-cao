@@ -33,7 +33,7 @@ let NotificationService = class NotificationService {
     }
     async existsPendingLogForTask(taskId) {
         const count = await this.logRepo.count({
-            where: { taskId, status: notification_status_enum_1.NotificationStatus.PENDING },
+            where: { task: { id: taskId }, status: notification_status_enum_1.NotificationStatus.PENDING },
         });
         return count > 0;
     }
@@ -41,7 +41,10 @@ let NotificationService = class NotificationService {
         return this.logRepo.find({ order: { scheduledAt: 'ASC' } });
     }
     async findByTask(taskId) {
-        return this.logRepo.find({ where: { taskId }, order: { createdAt: 'DESC' } });
+        return this.logRepo.find({
+            where: { task: { id: taskId } },
+            order: { createdAt: 'DESC' },
+        });
     }
     async findDueForSending(now) {
         return this.logRepo.find({

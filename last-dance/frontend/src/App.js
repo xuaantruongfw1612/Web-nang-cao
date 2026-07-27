@@ -7,9 +7,11 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import Dashboard from './pages/Dashboard';
 import SubjectsPage from './pages/SubjectsPage';
+import StatisticsPage from './pages/StatisticsPage';
 import NotificationsPage from './pages/NotificationsPage';
 import ProfilePage from './pages/ProfilePage';
 import DeadlineManager from './components/DeadlineManager';
+import CalendarPage from './components/CalendarPage';
 
 function Protected({ children }) {
   return (
@@ -30,6 +32,8 @@ export default function App() {
           <Route path="/" element={<Protected><Dashboard /></Protected>} />
           <Route path="/tasks" element={<Protected><DeadlineManager /></Protected>} />
           <Route path="/subjects" element={<Protected><SubjectsPage /></Protected>} />
+          <Route path="/statistics" element={<Protected><StatisticsPage /></Protected>} />
+          <Route path="/calendar" element={<Protected><CalendarPage /></Protected>} />
           <Route path="/notifications" element={<Protected><NotificationsPage /></Protected>} />
           <Route path="/profile" element={<Protected><ProfilePage /></Protected>} />
 

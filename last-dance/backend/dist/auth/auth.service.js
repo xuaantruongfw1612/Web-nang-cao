@@ -122,6 +122,9 @@ let AuthService = class AuthService {
         Object.assign(user, dto);
         return this.userRepo.save(user);
     }
+    async getProfile(userId) {
+        return this.findByIdOrFail(userId);
+    }
     async changePassword(userId, dto) {
         const user = await this.findByIdOrFail(userId);
         const isMatch = await bcrypt.compare(dto.oldPassword, user.password);

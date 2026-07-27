@@ -27,7 +27,7 @@ export class NotificationService {
   // tránh tạo trùng nhắc nhở cho cùng 1 task.
   async existsPendingLogForTask(taskId: string): Promise<boolean> {
     const count = await this.logRepo.count({
-      where: { taskId, status: NotificationStatus.PENDING },
+      where: { task: { id: taskId }, status: NotificationStatus.PENDING },
     });
     return count > 0;
   }
@@ -37,7 +37,10 @@ export class NotificationService {
   }
 
   async findByTask(taskId: string): Promise<NotificationLog[]> {
-    return this.logRepo.find({ where: { taskId }, order: { createdAt: 'DESC' } });
+    return this.logRepo.find({
+      where: { task: { id: taskId } },
+      order: { createdAt: 'DESC' },
+    });
   }
 
   // Lấy các log đến hạn gửi, dùng bởi cron "Gửi nhắc nhở qua Email".

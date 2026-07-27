@@ -13,7 +13,7 @@ export declare class AuthController {
     }>;
     refresh(dto: RefreshTokenDto): Promise<import("./auth.service").TokenPair>;
     logout(req: any): Promise<boolean>;
-    getProfile(req: any): any;
+    getProfile(req: any): Promise<import("./entities/user.entity").User>;
     updateProfile(req: any, dto: UpdateProfileDto): Promise<import("./entities/user.entity").User>;
     changePassword(req: any, dto: ChangePasswordDto): Promise<boolean>;
 }

@@ -82,7 +82,7 @@ export default function SubjectsPage() {
         <h1 className="text-lg font-bold text-gray-800">Môn học</h1>
         <button
           onClick={openCreate}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm px-4 py-2 rounded-md shadow-sm transition"
+          className="bg-pink-600 hover:bg-pink-700 text-white font-medium text-sm px-4 py-2 rounded-md shadow-sm transition"
         >
           + Thêm môn học
         </button>

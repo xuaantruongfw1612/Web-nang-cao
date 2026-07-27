@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useRef, useState } from 'react';
 import { authApi } from '../api/authApi';
 import { getStoredRefreshToken, setAccessToken, setStoredRefreshToken } from '../api/axiosClient';
 
@@ -9,8 +9,11 @@ export function AuthProvider({ children }) {
   // 'loading' = đang kiểm tra phiên cũ lúc mới mở app; tránh nháy màn hình
   // Login trước khi biết chắc người dùng đã đăng nhập hay chưa.
   const [loading, setLoading] = useState(true);
+  const didRestoreRef = useRef(false);
 
   useEffect(() => {
+    if (didRestoreRef.current) return;
+    didRestoreRef.current = true;
     restoreSession();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

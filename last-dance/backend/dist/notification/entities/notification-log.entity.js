@@ -26,8 +26,7 @@ __decorate([
     __metadata("design:type", task_entity_1.Task)
 ], NotificationLog.prototype, "task", void 0);
 __decorate([
-    (0, typeorm_1.Index)(),
-    (0, typeorm_1.Column)({ name: 'task_id', insert: false, update: false }),
+    (0, typeorm_1.RelationId)((log) => log.task),
     __metadata("design:type", String)
 ], NotificationLog.prototype, "taskId", void 0);
 __decorate([

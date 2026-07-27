@@ -35,7 +35,7 @@ export default function LoginPage() {
       <div className="w-full max-w-sm bg-white rounded-xl shadow-sm border border-gray-100 p-8">
         <div className="mb-6">
           <p className="text-lg font-bold text-[#1e2a5e] leading-tight">Student</p>
-          <p className="text-lg font-bold text-orange-500 leading-tight">Deadline Manager</p>
+          <p className="text-lg font-bold text-pink-500 leading-tight">Deadline Manager</p>
         </div>
         <h1 className="text-xl font-bold text-gray-800 mb-1">Đăng nhập</h1>
         <p className="text-sm text-gray-400 mb-6">Chào mừng bạn quay trở lại</p>

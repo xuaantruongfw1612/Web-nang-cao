@@ -4,13 +4,17 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CreateNotificationLogDto } from './dto/create-notification-log.dto';
 import { UpdateNotificationStatusDto } from './dto/update-notification-status.dto';
 import { NotificationService } from './notification.service';
+import { NotificationScheduler } from './notification.scheduler';
 
 @ApiTags('Notifications')
 @ApiBearerAuth('access-token')
 @UseGuards(JwtAuthGuard)
 @Controller('api/notifications')
 export class NotificationController {
-  constructor(private readonly notificationService: NotificationService) {}
+  constructor(
+  private readonly notificationService: NotificationService,
+  private readonly notificationScheduler: NotificationScheduler,
+) {}
 
   // GET /api/notifications
   @ApiOperation({ summary: 'Danh sách toàn bộ nhắc nhở' })
@@ -45,5 +49,16 @@ export class NotificationController {
   @Patch(':id/cancel')
   cancel(@Param('id') id: string) {
     return this.notificationService.cancelNotification(+id);
+  }
+
+  // POST /api/notifications/run-now
+  @ApiOperation({
+    summary: '[Demo/Test] Chạy ngay 2 cronjob (lập lịch + gửi email), không cần chờ',
+  })
+  @Post('run-now')
+  async runSchedulerNow() {
+    await this.notificationScheduler.scheduleUpcomingReminders();
+    await this.notificationScheduler.sendDueReminderEmails();
+    return { message: 'Đã chạy xong: lập lịch nhắc nhở + gửi email cho các log đến hạn.' };
   }
 }

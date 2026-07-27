@@ -40,7 +40,7 @@ let AuthController = class AuthController {
         return this.authService.logout(req.user.userId);
     }
     getProfile(req) {
-        return req.user;
+        return this.authService.getProfile(req.user.userId);
     }
     updateProfile(req, dto) {
         return this.authService.updateProfile(req.user.userId, dto);

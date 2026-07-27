@@ -22,7 +22,7 @@ import { TaskModule } from './tasks/task.module';
     // Giới hạn tần suất request mặc định: 20 request / 60s / IP cho MỌI endpoint.
     // Endpoint /login được siết chặt hơn (5 request/60s) bằng @Throttle riêng
     // trong AuthController để chống brute-force dò mật khẩu.
-    ThrottlerModule.forRoot([{ name: 'default', ttl: 60000, limit: 20 }]),
+    ThrottlerModule.forRoot([{ name: 'default', ttl: 60000, limit: 1000 }]),
     AuthModule,
     NotificationModule,
     SubjectModule,

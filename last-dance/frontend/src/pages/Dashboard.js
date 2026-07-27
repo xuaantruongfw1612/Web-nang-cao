@@ -88,7 +88,7 @@ export default function Dashboard() {
       {!loading && !error && (
         <>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatCard label="Tổng công việc" value={stats.total} icon="📋" color="orange" />
+            <StatCard label="Tổng công việc" value={stats.total} icon="📋" color="pink" />
             <StatCard label="Sắp đến hạn (7 ngày)" value={stats.upcoming7d} icon="⏰" color="blue" />
             <StatCard label="Quá hạn" value={stats.overdue} icon="⚠️" color="red" />
             <StatCard label="Đã hoàn thành" value={stats.completed} icon="✅" color="green" />
@@ -98,7 +98,7 @@ export default function Dashboard() {
             <Card className="lg:col-span-2 p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="font-bold text-gray-800">Deadline sắp tới</h2>
-                <Link to="/tasks" className="text-sm text-orange-600 font-medium hover:underline">
+                <Link to="/tasks" className="text-sm text-ping-600 font-medium hover:underline">
                   Xem tất cả
                 </Link>
               </div>

@@ -117,6 +117,10 @@ export class AuthService {
     return this.userRepo.save(user);
   }
 
+  async getProfile(userId: number): Promise<User> {
+    return this.findByIdOrFail(userId);
+  }
+
   async changePassword(userId: number, dto: ChangePasswordDto): Promise<boolean> {
     const user = await this.findByIdOrFail(userId);
 

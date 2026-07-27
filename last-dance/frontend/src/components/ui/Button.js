@@ -1,5 +1,5 @@
 const VARIANTS = {
-  primary: 'bg-orange-500 hover:bg-orange-600 text-white shadow-sm',
+  primary: 'bg-pink-500 hover:bg-pink-600 text-white shadow-sm',
   secondary: 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-200',
   danger: 'bg-red-50 hover:bg-red-100 text-red-600',
   ghost: 'text-gray-500 hover:text-gray-700',

@@ -19,9 +19,11 @@ const jwt_auth_guard_1 = require("../auth/guards/jwt-auth.guard");
 const create_notification_log_dto_1 = require("./dto/create-notification-log.dto");
 const update_notification_status_dto_1 = require("./dto/update-notification-status.dto");
 const notification_service_1 = require("./notification.service");
+const notification_scheduler_1 = require("./notification.scheduler");
 let NotificationController = class NotificationController {
-    constructor(notificationService) {
+    constructor(notificationService, notificationScheduler) {
         this.notificationService = notificationService;
+        this.notificationScheduler = notificationScheduler;
     }
     findAll() {
         return this.notificationService.findAll();
@@ -37,6 +39,11 @@ let NotificationController = class NotificationController {
     }
     cancel(id) {
         return this.notificationService.cancelNotification(+id);
+    }
+    async runSchedulerNow() {
+        await this.notificationScheduler.scheduleUpcomingReminders();
+        await this.notificationScheduler.sendDueReminderEmails();
+        return { message: 'Đã chạy xong: lập lịch nhắc nhở + gửi email cho các log đến hạn.' };
     }
 };
 exports.NotificationController = NotificationController;
@@ -80,11 +87,21 @@ __decorate([
     __metadata("design:paramtypes", [String]),
     __metadata("design:returntype", void 0)
 ], NotificationController.prototype, "cancel", null);
+__decorate([
+    (0, swagger_1.ApiOperation)({
+        summary: '[Demo/Test] Chạy ngay 2 cronjob (lập lịch + gửi email), không cần chờ',
+    }),
+    (0, common_1.Post)('run-now'),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", []),
+    __metadata("design:returntype", Promise)
+], NotificationController.prototype, "runSchedulerNow", null);
 exports.NotificationController = NotificationController = __decorate([
     (0, swagger_1.ApiTags)('Notifications'),
     (0, swagger_1.ApiBearerAuth)('access-token'),
     (0, common_1.UseGuards)(jwt_auth_guard_1.JwtAuthGuard),
     (0, common_1.Controller)('api/notifications'),
-    __metadata("design:paramtypes", [notification_service_1.NotificationService])
+    __metadata("design:paramtypes", [notification_service_1.NotificationService,
+        notification_scheduler_1.NotificationScheduler])
 ], NotificationController);
 //# sourceMappingURL=notification.controller.js.map
