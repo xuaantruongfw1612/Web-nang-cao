@@ -57,12 +57,12 @@ export class AuthService {
 
     // Không tiết lộ email/mật khẩu sai cụ thể để tránh dò tài khoản (bảo mật - Câu 9)
     if (!user) {
-      throw new UnauthorizedException('Thông tin đăng nhập không hợp lệ');
+      throw new UnauthorizedException('Thông tin đăng nhập không chính xác');
     }
 
     const isMatch = await bcrypt.compare(dto.password, user.password);
     if (!isMatch) {
-      throw new UnauthorizedException('Thông tin đăng nhập không hợp lệ');
+      throw new UnauthorizedException('Thông tin đăng nhập không chính xác');
     }
 
     const tokens = await this.generateTokenPair(user);

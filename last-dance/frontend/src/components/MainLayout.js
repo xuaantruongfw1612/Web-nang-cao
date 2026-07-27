@@ -161,9 +161,17 @@ const MainLayout = ({ children }) => {
                 onClick={() => setMenuOpen((v) => !v)}
                 className="flex cursor-pointer items-center gap-2 text-gray-200 hover:text-white"
               >
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-pink-600 text-xs font-bold text-white">
-                  {(user?.fullName || '?').slice(0, 1).toUpperCase()}
-                </div>
+                {user?.avatarUrl ? (
+  <img 
+    src={user.avatarUrl} 
+    alt="Avatar" 
+    className="h-8 w-8 rounded-full object-cover shadow-sm border border-gray-200"
+  />
+) : (
+  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-pink-600 text-xs font-bold text-white">
+    {(user?.fullName || '?').slice(0, 1).toUpperCase()}
+  </div>
+)}
                 <div className="flex flex-col text-left">
                   <span className="text-xs font-semibold">{user?.fullName || 'Sinh viên'}</span>
                   <span className="text-[10px] text-gray-300">{user?.studentCode}</span>

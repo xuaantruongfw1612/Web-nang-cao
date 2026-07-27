@@ -66,7 +66,7 @@ export default function RegisterPage() {
               required
               value={form.studentCode}
               onChange={handleChange}
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400"
+              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-pink-400 focus:ring-1 focus:ring-pink-400"
               placeholder="SV001"
             />
           </div>
@@ -123,11 +123,11 @@ export default function RegisterPage() {
         </form>
 
         <p className="text-sm text-gray-500 mt-6 text-center">
-          Đã có tài khoản?{' '}
-          <Link to="/login" className="text-orange-600 font-semibold hover:underline">
-            Đăng nhập
-          </Link>
-        </p>
+  Đã có tài khoản?{' '}
+  <Link to="/login" className="text-pink-600 font-semibold hover:underline">
+    Đăng nhập
+  </Link>
+</p>
       </div>
     </div>
   );

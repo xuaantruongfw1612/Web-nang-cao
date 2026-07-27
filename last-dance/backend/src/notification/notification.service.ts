@@ -16,7 +16,7 @@ export class NotificationService {
   // Được cron "Lập lịch" gọi, hoặc gọi thủ công.
   async createLog(dto: CreateNotificationLogDto): Promise<NotificationLog> {
     const log = this.logRepo.create({
-      task: { id: dto.taskId } as Task, // chỉ cần id để TypeORM ghi đúng cột task_id
+      task: { id: dto.taskId } as Task,
       message: dto.message,
       scheduledAt: new Date(dto.scheduledAt),
       status: NotificationStatus.PENDING,
@@ -32,20 +32,25 @@ export class NotificationService {
     return count > 0;
   }
 
-  async findAll(): Promise<NotificationLog[]> {
-    return this.logRepo.find({ order: { scheduledAt: 'ASC' } });
+  async findAllForUser(userId: number): Promise<NotificationLog[]> {
+    return this.logRepo
+      .createQueryBuilder('log')
+      .innerJoin('log.task', 'task')
+      .where('task.userId = :userId', { userId })
+      .orderBy('log.scheduledAt', 'ASC')
+      .getMany();
   }
 
-  async findByTask(taskId: string): Promise<NotificationLog[]> {
-    return this.logRepo.find({
-      where: { task: { id: taskId } },
-      order: { createdAt: 'DESC' },
-    });
+  async findByTaskForUser(userId: number, taskId: string): Promise<NotificationLog[]> {
+    return this.logRepo
+      .createQueryBuilder('log')
+      .innerJoin('log.task', 'task')
+      .where('task.id = :taskId', { taskId })
+      .andWhere('task.userId = :userId', { userId })
+      .orderBy('log.createdAt', 'DESC')
+      .getMany();
   }
 
-  // Lấy các log đến hạn gửi, dùng bởi cron "Gửi nhắc nhở qua Email".
-  // relations: ['task', 'task.user'] để lấy kèm thông tin Task và User (email)
-  // qua đúng quan hệ Entity của TypeORM, không dùng raw SQL / JOIN thủ công.
   async findDueForSending(now: Date): Promise<NotificationLog[]> {
     return this.logRepo.find({
       where: { status: NotificationStatus.PENDING, scheduledAt: LessThanOrEqual(now) },
@@ -60,9 +65,17 @@ export class NotificationService {
     return this.logRepo.save(log);
   }
 
-  // Tương ứng method cancelNotification() - chỉ huỷ được khi đang PENDING
-  async cancelNotification(id: number): Promise<boolean> {
-    const log = await this.findOneOrFail(id);
+  async updateStatusForUser(
+    userId: number,
+    id: number,
+    status: NotificationStatus,
+  ): Promise<NotificationLog> {
+    await this.findOwnedLogOrFail(userId, id);
+    return this.updateStatus(id, status);
+  }
+
+  async cancelNotification(userId: number, id: number): Promise<boolean> {
+    const log = await this.findOwnedLogOrFail(userId, id);
     if (log.status !== NotificationStatus.PENDING) {
       throw new BadRequestException('Chỉ có thể huỷ nhắc nhở đang ở trạng thái PENDING');
     }
@@ -73,6 +86,19 @@ export class NotificationService {
 
   private async findOneOrFail(id: number): Promise<NotificationLog> {
     const log = await this.logRepo.findOne({ where: { id } });
+    if (!log) {
+      throw new NotFoundException('Không tìm thấy bản ghi nhắc nhở');
+    }
+    return log;
+  }
+
+  private async findOwnedLogOrFail(userId: number, id: number): Promise<NotificationLog> {
+    const log = await this.logRepo
+      .createQueryBuilder('log')
+      .innerJoin('log.task', 'task')
+      .where('log.id = :id', { id })
+      .andWhere('task.userId = :userId', { userId })
+      .getOne();
     if (!log) {
       throw new NotFoundException('Không tìm thấy bản ghi nhắc nhở');
     }

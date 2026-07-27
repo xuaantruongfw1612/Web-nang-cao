@@ -19,12 +19,6 @@ export class MailService {
     });
   }
 
-  /**
-   * Gửi email nhắc nhở deadline.
-   * Trả về true/false thay vì throw, vì lỗi gửi mail (Chưa thành công trong
-   * Activity Diagram 3) là một luồng nghiệp vụ bình thường cần được xử lý
-   * (cập nhật NotificationLog -> FAILED), không phải lỗi hệ thống.
-   */
   async sendDeadlineReminder(to: string, subject: string, content: string): Promise<boolean> {
     try {
       await this.transporter.sendMail({
