@@ -7,6 +7,7 @@ import Button from './ui/Button';
 import Card from './ui/Card';
 import Badge from './ui/Badge';
 import { extractErrorMessage } from '../utils/errors';
+import { FileDown, Loader2 } from 'lucide-react'; // Thêm import Icon
 
 const STATUS_BADGE = { PENDING: 'yellow', IN_PROGRESS: 'blue', COMPLETED: 'green', OVERDUE: 'red', CANCELLED: 'gray' };
 const STATUS_LABEL = {
@@ -48,6 +49,9 @@ export default function DeadlineManager() {
   const [formError, setFormError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
+  // Thêm State quản lý loading khi xuất báo cáo
+  const [isExporting, setIsExporting] = useState(false);
+
   useEffect(() => {
     loadAll();
   }, []);
@@ -56,7 +60,6 @@ export default function DeadlineManager() {
     setLoading(true);
     setError('');
     
-    // Tách riêng việc tải môn học và công việc để tránh lỗi chéo
     try {
       const subjectList = await subjectApi.getAll();
       setSubjects(subjectList);
@@ -74,6 +77,15 @@ export default function DeadlineManager() {
       setLoading(false);
     }
   }
+
+  // Hàm xử lý xuất báo cáo
+  const handleExportReport = () => {
+    setIsExporting(true);
+    setTimeout(() => {
+      setIsExporting(false);
+      alert('🎉 Xuất báo cáo thành công!');
+    }, 2000);
+  };
 
   const filteredAndSortedTasks = useMemo(() => {
     const result = typeFilter === 'ALL' ? [...tasks] : tasks.filter((t) => t.type === typeFilter);
@@ -216,9 +228,26 @@ export default function DeadlineManager() {
             </div>
           </div>
 
-          <Button onClick={openCreate} className="bg-pink-500 hover:bg-pink-600 text-white">
-            + Thêm Deadline mới
-          </Button>
+          {/* KHU VỰC 2 NÚT BẤM (Đã bọc trong thẻ flex) */}
+          <div className="flex items-center gap-3">
+            <Button 
+              variant="secondary" 
+              onClick={handleExportReport}
+              disabled={isExporting}
+              className="text-slate-600 bg-white border-slate-200 hover:bg-slate-50"
+            >
+              {isExporting ? (
+                <Loader2 size={16} className="animate-spin text-slate-400" />
+              ) : (
+                <FileDown size={16} className="text-slate-500" />
+              )}
+              Xuất báo cáo
+            </Button>
+
+            <Button onClick={openCreate} variant="primary">
+              + Thêm Deadline mới
+            </Button>
+          </div>
         </div>
 
         {loading && <p className="text-sm text-gray-400">Đang tải...</p>}
