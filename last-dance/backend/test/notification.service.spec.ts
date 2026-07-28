@@ -8,12 +8,29 @@ import { NotificationStatus } from '../src/common/enums/notification-status.enum
 
 type MockRepo = Partial<Record<keyof Repository<NotificationLog>, jest.Mock>>;
 
+// Mock query builder chainable, dùng cho các hàm có kiểm tra quyền sở hữu
+// (findOwnedLogOrFail, findAllForUser, findByTaskForUser) - đều đi qua
+// createQueryBuilder().innerJoin(...).where(...).andWhere(...).getOne()/getMany()
+// thay vì repo.findOne()/find() trực tiếp.
+const createMockQueryBuilder = () => {
+  const qb: any = {
+    innerJoin: jest.fn().mockReturnThis(),
+    where: jest.fn().mockReturnThis(),
+    andWhere: jest.fn().mockReturnThis(),
+    orderBy: jest.fn().mockReturnThis(),
+    getOne: jest.fn(),
+    getMany: jest.fn(),
+  };
+  return qb;
+};
+
 const createMockRepo = (): MockRepo => ({
   create: jest.fn(),
   save: jest.fn(),
   count: jest.fn(),
   find: jest.fn(),
   findOne: jest.fn(),
+  createQueryBuilder: jest.fn(),
 });
 
 describe('NotificationService', () => {
@@ -62,28 +79,42 @@ describe('NotificationService', () => {
     });
   });
 
+  // cancelNotification(userId, id) - đã sửa lại toàn bộ nhóm test này.
+  // Bản cũ gọi service.cancelNotification(1) (thiếu userId) và mock qua
+  // logRepo.findOne, không còn đúng với code thật (dùng createQueryBuilder
+  // để chỉ tìm log thuộc về đúng userId đang đăng nhập).
   describe('cancelNotification', () => {
-    it('huỷ thành công khi log đang PENDING', async () => {
-      const log = { id: 1, status: NotificationStatus.PENDING };
-      logRepo.findOne!.mockResolvedValue(log);
-      logRepo.save!.mockResolvedValue({ ...log, status: NotificationStatus.CANCELLED });
+    it('huỷ thành công khi log đang PENDING và thuộc về đúng user', async () => {
+      const qb = createMockQueryBuilder();
+      qb.getOne.mockResolvedValue({ id: 1, status: NotificationStatus.PENDING });
+      logRepo.createQueryBuilder!.mockReturnValue(qb);
+      logRepo.save!.mockImplementation((log) => Promise.resolve(log));
 
-      await expect(service.cancelNotification(1)).resolves.toBe(true);
+      const userId = 10;
+      const logId = 1;
+      await expect(service.cancelNotification(userId, logId)).resolves.toBe(true);
+
+      expect(qb.andWhere).toHaveBeenCalledWith('task.userId = :userId', { userId });
       expect(logRepo.save).toHaveBeenCalledWith(
         expect.objectContaining({ status: NotificationStatus.CANCELLED }),
       );
     });
 
     it('ném BadRequestException khi log không ở trạng thái PENDING', async () => {
-      logRepo.findOne!.mockResolvedValue({ id: 1, status: NotificationStatus.SENT });
+      const qb = createMockQueryBuilder();
+      qb.getOne.mockResolvedValue({ id: 1, status: NotificationStatus.SENT });
+      logRepo.createQueryBuilder!.mockReturnValue(qb);
 
-      await expect(service.cancelNotification(1)).rejects.toThrow(BadRequestException);
+      await expect(service.cancelNotification(10, 1)).rejects.toThrow(BadRequestException);
+      expect(logRepo.save).not.toHaveBeenCalled();
     });
 
-    it('ném NotFoundException khi không tìm thấy log', async () => {
-      logRepo.findOne!.mockResolvedValue(null);
+    it('ném NotFoundException khi không tìm thấy log (hoặc log không thuộc về user)', async () => {
+      const qb = createMockQueryBuilder();
+      qb.getOne.mockResolvedValue(null);
+      logRepo.createQueryBuilder!.mockReturnValue(qb);
 
-      await expect(service.cancelNotification(999)).rejects.toThrow(NotFoundException);
+      await expect(service.cancelNotification(10, 999)).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -98,6 +129,31 @@ describe('NotificationService', () => {
 
       expect(result.status).toBe(NotificationStatus.SENT);
       expect(result.sentAt).toBe(sentAt);
+    });
+  });
+
+  // updateStatusForUser(userId, id, status) - thêm mới để phủ đúng API thật
+  // (PATCH /:id/status) có kiểm tra quyền sở hữu trước khi cho cập nhật.
+  describe('updateStatusForUser', () => {
+    it('cập nhật thành công khi log thuộc về đúng user', async () => {
+      const qb = createMockQueryBuilder();
+      qb.getOne.mockResolvedValue({ id: 1, status: NotificationStatus.PENDING });
+      logRepo.createQueryBuilder!.mockReturnValue(qb);
+      logRepo.findOne!.mockResolvedValue({ id: 1, status: NotificationStatus.PENDING });
+      logRepo.save!.mockImplementation((l) => Promise.resolve(l));
+
+      const result = await service.updateStatusForUser(10, 1, NotificationStatus.SENT);
+      expect(result.status).toBe(NotificationStatus.SENT);
+    });
+
+    it('ném NotFoundException khi log không thuộc về user gọi request', async () => {
+      const qb = createMockQueryBuilder();
+      qb.getOne.mockResolvedValue(null);
+      logRepo.createQueryBuilder!.mockReturnValue(qb);
+
+      await expect(
+        service.updateStatusForUser(10, 1, NotificationStatus.SENT),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 });

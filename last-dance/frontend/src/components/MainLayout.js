@@ -1,6 +1,10 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { 
+  Home, CalendarDays, CheckSquare, BookOpen, 
+  PieChart, Bell, Search, ChevronDown, ChevronRight, User, LogOut, GraduationCap 
+} from 'lucide-react';
 
 const MainLayout = ({ children }) => {
   const navigate = useNavigate();
@@ -16,29 +20,10 @@ const MainLayout = ({ children }) => {
   const isNotificationsPage = location.pathname.startsWith('/notifications');
   const isProfilePage = location.pathname.startsWith('/profile');
   
-  // Đã gỡ bỏ isStatisticsPage khỏi mục Quản lý Deadline
-  const isDeadlineSection = isTasksPage || isSubjectPage;
-
-  const breadcrumbLabel = isDashboard
-    ? 'Trang chủ'
-    : isSubjectPage
-    ? 'Danh mục Môn học'
-    : isStatisticsPage
-    ? 'Thống kê tiến độ'
-    : isCalendarPage
-    ? 'Lịch cá nhân'
-    : isNotificationsPage
-    ? 'Nhắc nhở'
-    : isProfilePage
-    ? 'Hồ sơ cá nhân'
-    : isTasksPage
-    ? 'Danh sách công việc'
-    : '';
-
-  const submenuClass = (active) =>
-    `flex w-full items-center gap-2 text-left transition ${
-      active ? 'font-medium text-pink-400' : 'text-gray-300 hover:text-white'
-    }`;
+  const breadcrumbLabel = isDashboard ? 'Trang chủ' : isSubjectPage ? 'Danh mục Môn học'
+    : isStatisticsPage ? 'Thống kê tiến độ' : isCalendarPage ? 'Lịch cá nhân'
+    : isNotificationsPage ? 'Nhắc nhở' : isProfilePage ? 'Hồ sơ cá nhân'
+    : isTasksPage ? 'Danh sách công việc' : '';
 
   async function handleLogout() {
     setMenuOpen(false);
@@ -47,170 +32,118 @@ const MainLayout = ({ children }) => {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#e8ecf1] font-sans">
-      <aside className="relative flex w-[260px] flex-shrink-0 flex-col bg-[#222b45] text-gray-300">
-        <div className="mt-2 flex flex-col items-center border-b border-white/10 p-4">
-          <div className="mb-2 flex h-14 w-14 items-center justify-center rounded-full bg-white shadow-lg">
-            <span className="text-lg font-bold text-[#222b45]">PU</span>
+    <div className="flex h-screen overflow-hidden bg-slate-50 font-sans">
+      <aside className="relative flex w-[260px] flex-shrink-0 flex-col bg-[#1e293b] text-slate-300 shadow-xl z-20">
+        
+        {/* KHU VỰC LOGO CHUẨN */}
+        <div className="mt-2 flex flex-col items-center border-b border-white/5 p-6">
+          <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-tr from-pink-500 to-orange-400 shadow-lg shadow-pink-500/20">
+            <GraduationCap size={26} className="text-white" strokeWidth={2.5} />
           </div>
-          <h1 className="text-base font-bold tracking-wider text-white">STUDENT</h1>
-          <span className="text-xs text-gray-400">Deadline Manager</span>
+          <h1 className="text-sm font-bold tracking-widest text-white">STUDENT</h1>
+          <span className="text-xs text-slate-400 font-medium">Deadline Manager</span>
         </div>
+        {/* KẾT THÚC KHU VỰC LOGO */}
 
-        <nav className="custom-scrollbar z-10 flex-1 overflow-y-auto py-4">
-          <ul className="space-y-1 text-sm">
-            {/* TRANG CHỦ (Dashboard) */}
+        <nav className="custom-scrollbar z-10 flex-1 overflow-y-auto py-6">
+          <ul className="space-y-1 text-sm font-medium">
             <li>
-              <button
-                type="button"
-                onClick={() => navigate('/')}
-                className={`flex w-full items-center gap-3 px-6 py-2.5 text-left hover:bg-white/10 ${isDashboard ? 'text-pink-400 bg-white/5 font-medium' : 'text-gray-300'}`}
-              >
-                <svg className={`w-5 h-5 shrink-0 ${isDashboard ? 'text-pink-400' : 'text-gray-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-                </svg>
-                Trang chủ
+              <button onClick={() => navigate('/')} className={`flex w-full items-center gap-3 px-6 py-3 text-left transition-colors ${isDashboard ? 'text-pink-400 bg-white/5 border-r-2 border-pink-400' : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'}`}>
+                <Home size={18} /> Trang chủ
+              </button>
+            </li>
+            <li>
+              <button onClick={() => navigate('/calendar')} className={`flex w-full items-center gap-3 px-6 py-3 text-left transition-colors ${isCalendarPage ? 'text-pink-400 bg-white/5 border-r-2 border-pink-400' : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'}`}>
+                <CalendarDays size={18} /> Lịch cá nhân
               </button>
             </li>
 
-            {/* LỊCH CÁ NHÂN */}
-            <li>
-              <button
-                type="button"
-                onClick={() => navigate('/calendar')}
-                className={`flex w-full items-center gap-3 px-6 py-2.5 text-left hover:bg-white/10 ${isCalendarPage ? 'text-pink-400 bg-white/5 font-medium' : 'text-gray-300'}`}
-              >
-                <svg className={`w-5 h-5 shrink-0 ${isCalendarPage ? 'text-pink-400' : 'text-gray-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                Lịch cá nhân
-              </button>
-            </li>
-
-            {/* QUẢN LÝ DEADLINE (submenu) */}
-            <li className="mt-2 flex flex-col">
-              <div
-                className={`flex items-center justify-between border-l-4 px-6 py-2.5 font-medium ${
-                  isDeadlineSection ? 'border-pink-500 bg-white/5 text-pink-400' : 'border-transparent text-gray-300'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <svg className={`w-5 h-5 shrink-0 ${isDeadlineSection ? 'text-pink-400' : 'text-gray-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-                  </svg>
-                  Quản lý Deadline
-                </div>
-                <span className="text-xs">▼</span>
+            <li className="mt-4 flex flex-col">
+              <div className="px-6 py-2 text-[10px] uppercase tracking-wider text-slate-500 font-bold">
+                Học Tập
               </div>
-
-              <ul className="space-y-3 py-2 pl-14 text-xs">
+              <ul className="space-y-1">
                 <li>
-                  <button type="button" onClick={() => navigate('/tasks')} className={submenuClass(isTasksPage)}>
-                    <span className={`h-1.5 w-1.5 rounded-full ${isTasksPage ? 'bg-pink-400' : 'bg-gray-400'}`} />
-                    Danh sách công việc
+                  <button onClick={() => navigate('/tasks')} className={`flex w-full items-center gap-3 px-6 py-3 text-left transition-colors ${isTasksPage ? 'text-pink-400 bg-white/5 border-r-2 border-pink-400' : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'}`}>
+                    <CheckSquare size={18} /> Công việc
                   </button>
                 </li>
                 <li>
-                  <button type="button" onClick={() => navigate('/subjects')} className={submenuClass(isSubjectPage)}>
-                    <span className={`h-1.5 w-1.5 rounded-full ${isSubjectPage ? 'bg-pink-400' : 'bg-gray-400'}`} />
-                    Danh mục Môn học
+                  <button onClick={() => navigate('/subjects')} className={`flex w-full items-center gap-3 px-6 py-3 text-left transition-colors ${isSubjectPage ? 'text-pink-400 bg-white/5 border-r-2 border-pink-400' : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'}`}>
+                    <BookOpen size={18} /> Môn học
                   </button>
                 </li>
               </ul>
             </li>
 
-            {/* THỐNG KÊ (Đã đưa ra ngoài) */}
-            <li>
-              <button
-                type="button"
-                onClick={() => navigate('/statistics')}
-                className={`flex w-full items-center gap-3 px-6 py-2.5 text-left hover:bg-white/10 ${isStatisticsPage ? 'text-pink-400 bg-white/5 font-medium' : 'text-gray-300'}`}
-              >
-                <svg className={`w-5 h-5 shrink-0 ${isStatisticsPage ? 'text-pink-400' : 'text-gray-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
-                Thống kê
-              </button>
-            </li>
-
-            {/* NHẮC NHỞ */}
-            <li>
-              <button
-                type="button"
-                onClick={() => navigate('/notifications')}
-                className={`flex w-full items-center gap-3 px-6 py-2.5 text-left hover:bg-white/10 ${isNotificationsPage ? 'text-pink-400 bg-white/5 font-medium' : 'text-gray-300'}`}
-              >
-                <svg className={`w-5 h-5 shrink-0 ${isNotificationsPage ? 'text-pink-400' : 'text-gray-400'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                </svg>
-                Nhắc nhở
-              </button>
+            <li className="mt-4 flex flex-col">
+              <div className="px-6 py-2 text-[10px] uppercase tracking-wider text-slate-500 font-bold">
+                Phân Tích
+              </div>
+              <ul className="space-y-1">
+                <li>
+                  <button onClick={() => navigate('/statistics')} className={`flex w-full items-center gap-3 px-6 py-3 text-left transition-colors ${isStatisticsPage ? 'text-pink-400 bg-white/5 border-r-2 border-pink-400' : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'}`}>
+                    <PieChart size={18} /> Thống kê
+                  </button>
+                </li>
+                <li>
+                  <button onClick={() => navigate('/notifications')} className={`flex w-full items-center gap-3 px-6 py-3 text-left transition-colors ${isNotificationsPage ? 'text-pink-400 bg-white/5 border-r-2 border-pink-400' : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'}`}>
+                    <Bell size={18} /> Nhắc nhở
+                  </button>
+                </li>
+              </ul>
             </li>
           </ul>
         </nav>
       </aside>
 
       <div className="flex w-full flex-1 flex-col">
-        <header className="z-10 flex h-[60px] items-center justify-between bg-[#222b45] px-6 shadow-sm">
-          <div className="flex-1" />
+        <header className="z-10 flex h-[70px] items-center justify-between bg-white px-8 shadow-sm border-b border-slate-200">
+          <div className="flex items-center gap-2 text-sm font-medium text-slate-500">
+            <span className="text-slate-400">Lịch trình</span>
+            <ChevronRight size={14} className="text-slate-300" />
+            <span className="font-semibold text-slate-800">{breadcrumbLabel}</span>
+          </div>
 
           <div className="flex items-center gap-6">
             <div className="relative">
               <input
                 type="text"
                 placeholder="Tìm kiếm..."
-                className="w-[260px] rounded-full bg-[#2d3a5d] py-1.5 pl-4 pr-10 text-sm text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-pink-400"
+                className="w-[260px] rounded-full bg-slate-100 py-2 pl-10 pr-4 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-pink-200 focus:bg-white transition-all border border-transparent focus:border-pink-200"
               />
-              <span className="absolute right-3 top-1.5 text-gray-400">🔍</span>
+              <Search size={16} className="absolute left-3.5 top-2.5 text-slate-400" />
             </div>
 
-            <button
-              type="button"
-              onClick={() => navigate('/notifications')}
-              className="text-gray-300 hover:text-white"
-              aria-label="Nhắc nhở"
-            >
-              🔔
+            <button onClick={() => navigate('/notifications')} className="relative text-slate-400 hover:text-pink-500 transition-colors">
+              <Bell size={20} />
+              <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-pink-500 ring-2 ring-white"></span>
             </button>
 
             <div className="relative">
-              <button
-                type="button"
-                onClick={() => setMenuOpen((v) => !v)}
-                className="flex cursor-pointer items-center gap-2 text-gray-200 hover:text-white"
-              >
+              <button onClick={() => setMenuOpen((v) => !v)} className="flex cursor-pointer items-center gap-3 pl-4 border-l border-slate-200">
                 {user?.avatarUrl ? (
-                  <img 
-                    src={user.avatarUrl} 
-                    alt="Avatar" 
-                    className="h-8 w-8 rounded-full object-cover shadow-sm border border-gray-200"
-                  />
+                  <img src={user.avatarUrl} alt="Avatar" className="h-9 w-9 rounded-full object-cover shadow-sm ring-2 ring-pink-100" />
                 ) : (
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-pink-600 text-xs font-bold text-white">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-gradient-to-tr from-pink-500 to-orange-400 text-sm font-bold text-white shadow-sm">
                     {(user?.fullName || '?').slice(0, 1).toUpperCase()}
                   </div>
                 )}
-                <div className="flex flex-col text-left">
-                  <span className="text-xs font-semibold">{user?.fullName || 'Sinh viên'}</span>
-                  <span className="text-[10px] text-gray-300">{user?.studentCode}</span>
+                <div className="hidden md:flex flex-col text-left">
+                  <span className="text-sm font-semibold text-slate-700">{user?.fullName || 'Sinh viên'}</span>
+                  <span className="text-[11px] text-slate-400 font-medium">{user?.studentCode}</span>
                 </div>
-                <span className="text-xs">▼</span>
+                <ChevronDown size={14} className="text-slate-400" />
               </button>
 
               {menuOpen && (
-                <div className="absolute right-0 mt-2 w-44 bg-white rounded-md shadow-lg border border-gray-200 py-1 text-sm text-gray-700 z-20">
-                  <Link
-                    to="/profile"
-                    onClick={() => setMenuOpen(false)}
-                    className="block px-4 py-2 hover:bg-gray-50"
-                  >
-                    Hồ sơ cá nhân
+                <div className="absolute right-0 mt-3 w-48 bg-white rounded-xl shadow-lg border border-slate-100 py-1 text-sm z-20 overflow-hidden">
+                  <Link to="/profile" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 px-4 py-2.5 text-slate-600 hover:bg-slate-50 hover:text-pink-600 transition-colors">
+                    <User size={16} /> Hồ sơ cá nhân
                   </Link>
-                  <button
-                    onClick={handleLogout}
-                    className="w-full text-left px-4 py-2 hover:bg-gray-50 text-red-600"
-                  >
-                    Đăng xuất
+                  <div className="border-t border-slate-100 my-1"></div>
+                  <button onClick={handleLogout} className="flex w-full items-center gap-2 px-4 py-2.5 text-red-500 hover:bg-red-50 transition-colors">
+                    <LogOut size={16} /> Đăng xuất
                   </button>
                 </div>
               )}
@@ -218,13 +151,7 @@ const MainLayout = ({ children }) => {
           </div>
         </header>
 
-        <div className="border-b border-gray-200 bg-white px-6 py-2.5 text-sm font-medium shadow-sm">
-          <span className="text-gray-500">Lịch trình</span>
-          <span className="mx-2 text-gray-400">/</span>
-          <span className="font-semibold text-pink-600">{breadcrumbLabel}</span>
-        </div>
-
-        <main className="flex-1 overflow-auto p-6">{children}</main>
+        <main className="flex-1 overflow-auto p-8 bg-slate-50/50">{children}</main>
       </div>
     </div>
   );

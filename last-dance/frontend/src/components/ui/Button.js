@@ -1,14 +1,14 @@
 const VARIANTS = {
-  primary: 'bg-pink-500 hover:bg-pink-600 text-white shadow-sm',
-  secondary: 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-200',
-  danger: 'bg-red-50 hover:bg-red-100 text-red-600',
-  ghost: 'text-gray-500 hover:text-gray-700',
+  primary: 'bg-pink-600 hover:bg-pink-700 text-white shadow-sm hover:shadow',
+  secondary: 'bg-white hover:bg-slate-50 text-slate-700 border border-slate-200',
+  danger: 'bg-rose-50 hover:bg-rose-100 text-rose-700',
+  ghost: 'text-slate-500 hover:text-slate-700 hover:bg-slate-50',
 };
 
 export default function Button({ variant = 'primary', className = '', children, ...props }) {
   return (
     <button
-      className={`inline-flex items-center justify-center gap-2 font-semibold text-sm px-4 py-2 rounded-lg transition disabled:opacity-60 disabled:cursor-not-allowed ${VARIANTS[variant]} ${className}`}
+      className={`inline-flex items-center justify-center gap-2 font-medium text-sm px-4 py-2.5 rounded-lg transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed ${VARIANTS[variant]} ${className}`}
       {...props}
     >
       {children}
