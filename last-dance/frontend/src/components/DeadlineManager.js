@@ -246,55 +246,60 @@ export default function DeadlineManager() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {filteredAndSortedTasks.map((item, index) => (
-                  <tr key={item.id} className="hover:bg-gray-50 transition">
-                    <td className="px-4 py-4 text-center text-gray-500 font-medium">{index + 1}</td>
-                    <td className="px-4 py-4">
-                      <p className="font-semibold text-gray-800">{item.title}</p>
-                      {item.subject?.name && (
-                        <p className="text-xs text-gray-400 mt-0.5">{item.subject.name}</p>
-                      )}
-                    </td>
-                    <td className="px-4 py-4 text-center">
-                      <Badge color={TYPE_BADGE[item.type] || 'gray'}>{item.type || '—'}</Badge>
-                    </td>
-                    <td className="px-4 py-4 text-center text-gray-600">
-                      {new Date(item.taskDatetime).toLocaleString('vi-VN')}
-                      {isOverdue(item) && (
-                        <span className="block text-[11px] font-bold text-red-500 mt-0.5">QUÁ HẠN</span>
-                      )}
-                    </td>
-                    <td className="px-4 py-4 text-center">
-                      <Badge color={STATUS_BADGE[item.status] || 'gray'}>
-                        {STATUS_LABEL[item.status] || item.status}
-                      </Badge>
-                    </td>
-                    <td className="px-4 py-4 text-center">
-                      <div className="flex items-center justify-center gap-3 text-sm">
-                        {item.status !== 'COMPLETED' && (
-                          <button
-                            onClick={() => handleMarkDone(item)}
-                            className="text-green-600 hover:underline font-semibold"
-                          >
-                            Xong
-                          </button>
+                {filteredAndSortedTasks.map((item, index) => {
+                  const overdue = isOverdue(item);
+                  const displayStatus = overdue ? 'OVERDUE' : item.status;
+
+                  return (
+                    <tr key={item.id} className="hover:bg-gray-50 transition">
+                      <td className="px-4 py-4 text-center text-gray-500 font-medium">{index + 1}</td>
+                      <td className="px-4 py-4">
+                        <p className="font-semibold text-gray-800">{item.title}</p>
+                        {item.subject?.name && (
+                          <p className="text-xs text-gray-400 mt-0.5">{item.subject.name}</p>
                         )}
-                        <button
-                          onClick={() => openEdit(item)}
-                          className="text-orange-600 hover:underline font-semibold"
-                        >
-                          Sửa
-                        </button>
-                        <button
-                          onClick={() => handleDelete(item)}
-                          className="text-red-500 hover:underline font-semibold"
-                        >
-                          Xóa
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        <Badge color={TYPE_BADGE[item.type] || 'gray'}>{item.type || '—'}</Badge>
+                      </td>
+                      <td className="px-4 py-4 text-center text-gray-600">
+                        {new Date(item.taskDatetime).toLocaleString('vi-VN')}
+                        {overdue && (
+                          <span className="block text-[11px] font-bold text-red-500 mt-0.5">QUÁ HẠN</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        <Badge color={STATUS_BADGE[displayStatus] || 'gray'}>
+                          {STATUS_LABEL[displayStatus] || displayStatus}
+                        </Badge>
+                      </td>
+                      <td className="px-4 py-4 text-center">
+                        <div className="flex items-center justify-center gap-3 text-sm">
+                          {!overdue && item.status !== 'COMPLETED' && item.status !== 'CANCELLED' && (
+                            <button
+                              onClick={() => handleMarkDone(item)}
+                              className="text-green-600 hover:underline font-semibold"
+                            >
+                              Xong
+                            </button>
+                          )}
+                          <button
+                            onClick={() => openEdit(item)}
+                            className="text-orange-600 hover:underline font-semibold"
+                          >
+                            Sửa
+                          </button>
+                          <button
+                            onClick={() => handleDelete(item)}
+                            className="text-red-500 hover:underline font-semibold"
+                          >
+                            Xóa
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
